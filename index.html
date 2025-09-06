@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>YouTube Video Embed</title>
+  <title>Canva Embed</title>
   <style>
     body {
       margin: 0;
@@ -11,32 +11,55 @@
       align-items: center;
       min-height: 100vh;
       background-color: #f5f5f5;
+      flex-direction: column;
     }
 
-    .video-container {
+    .canva-container {
       position: relative;
       width: 90%;
-      /* 16:9 aspect ratio */
-      padding-bottom: 56.25%;
-      height: 0;
+      padding-top: 150%; /* Adjust height ratio for mobile */
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(63,69,81,0.16);
+      margin-top: 1.6em;
+      margin-bottom: 0.9em;
     }
 
-    .video-container iframe {
+    .canva-container iframe {
       position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
-      border: 0;
+      top: 0;
+      left: 0;
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .credit {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: #555;
+      text-align: center;
+      margin-top: 0.5em;
+    }
+
+    .credit a {
+      color: #555;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
-  <div class="video-container">
-    <iframe src="https://www.youtube.com/embed/qmbHnRYR0dg?rel=0&modestbranding=1"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
+  <div class="canva-container">
+    <iframe loading="lazy"
+            src="https://www.canva.com/design/DAGyOYfi1gc/q_knmZTSMoWq4NasEGvqXg/view?embed"
+            allowfullscreen="allowfullscreen" allow="fullscreen">
     </iframe>
+  </div>
+  <div class="credit">
+    <a href="https://www.canva.com/design/DAGyOYfi1gc/q_knmZTSMoWq4NasEGvqXg/view?utm_content=DAGyOYfi1gc&utm_campaign=designshare&utm_medium=embeds&utm_source=link" 
+       target="_blank" rel="noopener">TutorUp</a> by Dilshad Alam
   </div>
 </body>
 </html>
