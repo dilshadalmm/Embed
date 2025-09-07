@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TutorUp Video Player</title>
+    <title>TutorUp - YouTube Video Player</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -81,6 +81,7 @@
             width: 100%;
             height: 100%;
             background: #000;
+            border: none;
         }
 
         .controls-container {
@@ -291,6 +292,13 @@
             justify-content: center;
             color: #666;
             position: relative;
+            overflow: hidden;
+        }
+
+        .additional-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .play-icon {
@@ -415,10 +423,7 @@
 
     <div class="video-player-fixed">
         <div class="video-container" id="videoContainer">
-            <video class="video-player" id="videoPlayer">
-                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
+            <iframe class="video-player" id="videoPlayer" src="https://www.youtube.com/embed/6stlCkUDG_s?rel=0&enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             
             <div class="controls-container" id="controlsContainer">
                 <div class="progress-container" id="progressContainer">
@@ -471,62 +476,62 @@
             <div class="channel-logo">
                 <i class="fas fa-play"></i>
             </div>
-            <div class="video-title">Amazing Nature Documentary - Beautiful Scenery & Wildlife</div>
+            <div class="video-title">Introduction to Web Development - HTML, CSS, JavaScript Tutorial</div>
         </div>
         
         <div class="additional-videos">
-            <div class="additional-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">
+            <div class="additional-video" data-video="RjHflb-QgWc">
                 <div class="additional-thumbnail">
-                    Thumbnail 1
+                    <img src="https://i.ytimg.com/vi/RjHflb-QgWc/hqdefault.jpg" alt="CSS Tutorial">
                     <div class="play-icon"><i class="fas fa-play"></i></div>
                 </div>
                 <div class="additional-info">
-                    <div class="additional-title">Elephants Dream - Animated Short Film</div>
-                    <div class="additional-channel">Animation Studio</div>
+                    <div class="additional-title">CSS Tutorial - Zero to Hero (Complete Course)</div>
+                    <div class="additional-channel">Web Dev Simplified</div>
                 </div>
             </div>
             
-            <div class="additional-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4">
+            <div class="additional-video" data-video="hkRRvE_0sAI">
                 <div class="additional-thumbnail">
-                    Thumbnail 2
+                    <img src="https://i.ytimg.com/vi/hkRRvE_0sAI/hqdefault.jpg" alt="JavaScript Tutorial">
                     <div class="play-icon"><i class="fas fa-play"></i></div>
                 </div>
                 <div class="additional-info">
-                    <div class="additional-title">For Bigger Blazes - High Quality Video</div>
-                    <div class="additional-channel">Tech Videos</div>
+                    <div class="additional-title">Learn JavaScript - Full Course for Beginners</div>
+                    <div class="additional-channel">freeCodeCamp.org</div>
                 </div>
             </div>
             
-            <div class="additional-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4">
+            <div class="additional-video" data-video="H3o4l4GVLW0">
                 <div class="additional-thumbnail">
-                    Thumbnail 3
+                    <img src="https://i.ytimg.com/vi/H3o4l4GVLW0/hqdefault.jpg" alt="Vue.js Tutorial">
                     <div class="play-icon"><i class="fas fa-play"></i></div>
                 </div>
                 <div class="additional-info">
-                    <div class="additional-title">For Bigger Escapes - Amazing Adventure</div>
-                    <div class="additional-channel">Adventure Channel</div>
+                    <div class="additional-title">Vue.js Course for Beginners [2021 Tutorial]</div>
+                    <div class="additional-channel">freeCodeCamp.org</div>
                 </div>
             </div>
             
-            <div class="additional-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4">
+            <div class="additional-video" data-video="b9eMGE7QtTk">
                 <div class="additional-thumbnail">
-                    Thumbnail 4
+                    <img src="https://i.ytimg.com/vi/b9eMGE7QtTk/hqdefault.jpg" alt="React Tutorial">
                     <div class="play-icon"><i class="fas fa-play"></i></div>
                 </div>
                 <div class="additional-info">
-                    <div class="additional-title">For Bigger Fun - Entertainment Compilation</div>
-                    <div class="additional-channel">Fun Videos</div>
+                    <div class="additional-title">React JS - React Tutorial for Beginners</div>
+                    <div class="additional-channel">Programming with Mosh</div>
                 </div>
             </div>
             
-            <div class="additional-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4">
+            <div class="additional-video" data-video="gfDE2a7MKjA">
                 <div class="additional-thumbnail">
-                    Thumbnail 5
+                    <img src="https://i.ytimg.com/vi/gfDE2a7MKjA/hqdefault.jpg" alt="Python Tutorial">
                     <div class="play-icon"><i class="fas fa-play"></i></div>
                 </div>
                 <div class="additional-info">
-                    <div class="additional-title">For Bigger Joyrides - Extreme Sports</div>
-                    <div class="additional-channel">Sports Network</div>
+                    <div class="additional-title">Python for Beginners - Learn Python in 1 Hour</div>
+                    <div class="additional-channel">Programming with Mosh</div>
                 </div>
             </div>
         </div>
@@ -534,15 +539,15 @@
 
     <div class="content">
         <h2>About This Video</h2>
-        <p>This amazing nature documentary showcases beautiful scenery and wildlife from around the world. Experience breathtaking landscapes, fascinating animal behaviors, and stunning cinematography that brings the natural world to life.</p>
-        <p>Filmed over three years across five continents, this documentary represents one of the most comprehensive looks at our planet's diverse ecosystems ever produced.</p>
+        <p>This web development tutorial is a complete course for beginners who want to learn HTML, CSS, and JavaScript. You'll learn how to build websites from scratch using the three fundamental technologies of the web.</p>
+        <p>The course covers HTML structure, CSS styling, and JavaScript programming concepts. By the end of this tutorial, you'll be able to create your own responsive websites and web applications.</p>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Get elements
             const videoContainer = document.getElementById('videoContainer');
-            const video = document.getElementById('videoPlayer');
+            const videoFrame = document.getElementById('videoPlayer');
             const playPauseBtn = document.getElementById('playPauseBtn');
             const volumeBtn = document.getElementById('volumeBtn');
             const volumeSlider = document.getElementById('volumeSlider');
@@ -556,70 +561,102 @@
             const skipForwardBtn = document.getElementById('skipForwardBtn');
             const additionalVideos = document.querySelectorAll('.additional-video');
             
-            // Store last volume before mute
-            let lastVolume = 1;
+            // YouTube API setup
+            let player;
+            let isPlaying = false;
             
-            // Play/Pause functionality
-            function togglePlayPause() {
-                if (video.paused) {
-                    video.play();
+            // Initialize YouTube API
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            
+            window.onYouTubeIframeAPIReady = function() {
+                player = new YT.Player('videoPlayer', {
+                    events: {
+                        'onStateChange': onPlayerStateChange,
+                        'onReady': onPlayerReady
+                    }
+                });
+            };
+            
+            function onPlayerReady(event) {
+                updateProgress();
+                setInterval(updateProgress, 1000);
+            }
+            
+            function onPlayerStateChange(event) {
+                if (event.data == YT.PlayerState.PLAYING) {
+                    isPlaying = true;
                     playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                } else {
-                    video.pause();
+                } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
+                    isPlaying = false;
                     playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
                 }
             }
             
+            // Play/Pause functionality
+            function togglePlayPause() {
+                if (isPlaying) {
+                    player.pauseVideo();
+                } else {
+                    player.playVideo();
+                }
+            }
+            
             playPauseBtn.addEventListener('click', togglePlayPause);
-            video.addEventListener('click', togglePlayPause);
             
             // Skip buttons functionality
             skipBackBtn.addEventListener('click', function() {
-                video.currentTime = Math.max(0, video.currentTime - 10);
+                const currentTime = player.getCurrentTime();
+                player.seekTo(Math.max(0, currentTime - 10), true);
             });
             
             skipForwardBtn.addEventListener('click', function() {
-                video.currentTime = Math.min(video.duration, video.currentTime + 10);
+                const currentTime = player.getCurrentTime();
+                player.seekTo(currentTime + 10, true);
             });
             
             // Volume control
             volumeBtn.addEventListener('click', function() {
-                if (video.volume > 0) {
-                    lastVolume = video.volume;
-                    video.volume = 0;
+                const volume = player.getVolume();
+                if (volume > 0) {
+                    player.setVolume(0);
                     volumeSlider.value = 0;
                     volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
                 } else {
-                    video.volume = lastVolume;
-                    volumeSlider.value = lastVolume;
-                    updateVolumeIcon();
+                    player.setVolume(100);
+                    volumeSlider.value = 1;
+                    volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
                 }
             });
             
             volumeSlider.addEventListener('input', function() {
-                video.volume = volumeSlider.value;
-                updateVolumeIcon();
-            });
-            
-            function updateVolumeIcon() {
-                if (video.volume == 0) {
+                const volume = volumeSlider.value * 100;
+                player.setVolume(volume);
+                
+                if (volume == 0) {
                     volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                } else if (video.volume < 0.5) {
+                } else if (volume < 50) {
                     volumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
                 } else {
                     volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
                 }
-            }
+            });
             
             // Progress bar
             function updateProgress() {
-                const percent = (video.currentTime / video.duration) * 100;
-                progressBar.style.width = `${percent}%`;
-                
-                // Update time display
-                const currentTime = formatTime(video.currentTime);
-                const duration = formatTime(video.duration);
-                timeDisplay.textContent = `${currentTime} / ${duration}`;
+                if (player && player.getDuration) {
+                    const currentTime = player.getCurrentTime();
+                    const duration = player.getDuration();
+                    const percent = (currentTime / duration) * 100;
+                    progressBar.style.width = `${percent}%`;
+                    
+                    // Update time display
+                    const currentTimeFormatted = formatTime(currentTime);
+                    const durationFormatted = formatTime(duration);
+                    timeDisplay.textContent = `${currentTimeFormatted} / ${durationFormatted}`;
+                }
             }
             
             function formatTime(seconds) {
@@ -628,18 +665,17 @@
                 return `${minutes}:${seconds.toString().padStart(2, '0')}`;
             }
             
-            video.addEventListener('timeupdate', updateProgress);
-            
             // Seek functionality
             progressContainer.addEventListener('click', function(e) {
                 const rect = progressContainer.getBoundingClientRect();
                 const percent = (e.clientX - rect.left) / rect.width;
-                video.currentTime = percent * video.duration;
+                const duration = player.getDuration();
+                player.seekTo(duration * percent, true);
             });
             
             // Playback speed
             speedSelect.addEventListener('change', function() {
-                video.playbackRate = parseFloat(this.value);
+                player.setPlaybackRate(parseFloat(this.value));
             });
             
             // Fullscreen
@@ -668,10 +704,10 @@
             // Additional videos functionality
             additionalVideos.forEach(videoElement => {
                 videoElement.addEventListener('click', function() {
-                    const videoSrc = this.getAttribute('data-video');
-                    video.src = videoSrc;
-                    video.load();
-                    video.play();
+                    const videoId = this.getAttribute('data-video');
+                    player.loadVideoById(videoId);
+                    player.playVideo();
+                    isPlaying = true;
                     playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
                     
                     // Update video title
@@ -683,7 +719,7 @@
             let controlsTimeout;
             function hideControls() {
                 controlsTimeout = setTimeout(() => {
-                    if (!video.paused) {
+                    if (isPlaying) {
                         controlsContainer.style.opacity = '0';
                     }
                 }, 3000);
@@ -693,44 +729,20 @@
                 clearTimeout(controlsTimeout);
                 controlsContainer.style.opacity = '1';
                 
-                if (!video.paused) {
+                if (isPlaying) {
                     hideControls();
                 }
             }
             
             videoContainer.addEventListener('mouseenter', showControls);
             videoContainer.addEventListener('mouseleave', () => {
-                if (!video.paused) {
+                if (isPlaying) {
                     hideControls();
                 }
             });
             
             videoContainer.addEventListener('mousemove', showControls);
-            
-            // Mobile touch controls
-            let touchTimer;
-            videoContainer.addEventListener('touchstart', function() {
-                videoContainer.classList.add('touch-active');
-                showControls();
-                
-                clearTimeout(touchTimer);
-                touchTimer = setTimeout(() => {
-                    videoContainer.classList.remove('touch-active');
-                }, 3000);
-            });
-            
-            // Initialize
-            video.addEventListener('loadedmetadata', function() {
-                timeDisplay.textContent = `0:00 / ${formatTime(video.duration)}`;
-            });
-            
-            // Handle video end
-            video.addEventListener('ended', function() {
-                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-                progressBar.style.width = '0%';
-            });
         });
     </script>
 </body>
 </html>
-      
