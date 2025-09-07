@@ -4,36 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube-Style Video Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
         }
 
         body {
-            font-family: 'Roboto', Arial, sans-serif;
-            background: #f9f9f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            background-color: #f9f9f9;
+            color: #333;
+            padding-top: 56.25vw; /* Maintain 16:9 aspect ratio for fixed player */
+        }
+
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
         }
 
-        .video-container {
+        .video-player-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 800px;
             background: #000;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-container {
             position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
         }
 
         .video-player {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            display: block;
+            height: 100%;
             background: #000;
         }
 
@@ -202,66 +215,180 @@
             }
         }
 
-        /* Fullscreen styles */
-        .video-container:-webkit-full-screen {
-            width: 100%;
-            height: 100%;
-            border-radius: 0;
+        /* Video title and info */
+        .video-info {
+            padding: 12px 15px;
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
         }
-        
-        .video-container:-ms-fullscreen {
-            width: 100%;
-            height: 100%;
-            border-radius: 0;
+
+        .video-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 5px;
         }
-        
-        .video-container:fullscreen {
+
+        .video-metadata {
+            display: flex;
+            justify-content: space-between;
+            color: #606060;
+            font-size: 14px;
+        }
+
+        /* Content styling */
+        .content {
+            padding: 20px;
+        }
+
+        .video-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .video-item {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .video-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .thumbnail {
             width: 100%;
-            height: 100%;
-            border-radius: 0;
+            aspect-ratio: 16/9;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .video-item-info {
+            padding: 12px;
+        }
+
+        .video-item-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .channel {
+            color: #606060;
+            font-size: 14px;
+        }
+
+        h2 {
+            margin: 30px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e5e5;
         }
     </style>
 </head>
 <body>
-    <div class="video-container" id="videoContainer">
-        <video class="video-player" id="videoPlayer">
-            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-        
-        <div class="controls-container" id="controlsContainer">
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-bar" id="progressBar">
-                    <div class="progress-handle"></div>
-                </div>
+    <div class="video-player-fixed">
+        <div class="video-info">
+            <div class="video-title">Amazing Nature Documentary - Beautiful Scenery & Wildlife</div>
+            <div class="video-metadata">
+                <span>1,234,567 views</span>
+                <span>Premiered on Jun 15, 2023</span>
             </div>
+        </div>
+        
+        <div class="video-container" id="videoContainer">
+            <video class="video-player" id="videoPlayer">
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
             
-            <div class="controls">
-                <div class="left-controls">
-                    <button class="control-btn play-pause" id="playPauseBtn">▶</button>
-                    
-                    <div class="volume-container">
-                        <button class="control-btn volume-btn" id="volumeBtn">🔊</button>
-                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+            <div class="controls-container" id="controlsContainer">
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress-handle"></div>
                     </div>
-                    
-                    <div class="time" id="timeDisplay">0:00 / 0:00</div>
                 </div>
                 
-                <div class="right-controls">
-                    <select class="speed-select" id="speedSelect">
-                        <option value="0.5">0.5x</option>
-                        <option value="0.75">0.75x</option>
-                        <option value="1" selected>1x</option>
-                        <option value="1.25">1.25x</option>
-                        <option value="1.5">1.5x</option>
-                        <option value="2">2x</option>
-                    </select>
+                <div class="controls">
+                    <div class="left-controls">
+                        <button class="control-btn play-pause" id="playPauseBtn">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        
+                        <div class="volume-container">
+                            <button class="control-btn volume-btn" id="volumeBtn">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+                        </div>
+                        
+                        <div class="time" id="timeDisplay">0:00 / 0:00</div>
+                    </div>
                     
-                    <button class="control-btn fullscreen-btn" id="fullscreenBtn">⛶</button>
+                    <div class="right-controls">
+                        <select class="speed-select" id="speedSelect">
+                            <option value="0.5">0.5x</option>
+                            <option value="0.75">0.75x</option>
+                            <option value="1" selected>1x</option>
+                            <option value="1.25">1.25x</option>
+                            <option value="1.5">1.5x</option>
+                            <option value="2">2x</option>
+                        </select>
+                        
+                        <button class="control-btn fullscreen-btn" id="fullscreenBtn">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="content">
+        <h2>Recommended Videos</h2>
+        <div class="video-list">
+            <div class="video-item">
+                <div class="thumbnail">Video Thumbnail</div>
+                <div class="video-item-info">
+                    <div class="video-item-title">Amazing Wildlife in Yellowstone National Park</div>
+                    <div class="channel">Nature Documentaries</div>
+                </div>
+            </div>
+            <div class="video-item">
+                <div class="thumbnail">Video Thumbnail</div>
+                <div class="video-item-info">
+                    <div class="video-item-title">The Grand Canyon - A Geological Wonder</div>
+                    <div class="channel">Geology Explorers</div>
+                </div>
+            </div>
+            <div class="video-item">
+                <div class="thumbnail">Video Thumbnail</div>
+                <div class="video-item-info">
+                    <div class="video-item-title">Northern Lights in Iceland - Spectacular Show</div>
+                    <div class="channel">Aurora Adventures</div>
+                </div>
+            </div>
+            <div class="video-item">
+                <div class="thumbnail">Video Thumbnail</div>
+                <div class="video-item-info">
+                    <div class="video-item-title">Underwater World - Great Barrier Reef</div>
+                    <div class="channel">Ocean Discoveries</div>
+                </div>
+            </div>
+        </div>
+        
+        <h2>Comments</h2>
+        <p>This video has received widespread acclaim for its stunning cinematography and educational value.</p>
+        <p>Many viewers have commented on the exceptional quality of the footage and the engaging narration.</p>
     </div>
 
     <script>
@@ -286,10 +413,10 @@
             function togglePlayPause() {
                 if (video.paused) {
                     video.play();
-                    playPauseBtn.textContent = '❚❚';
+                    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
                 } else {
                     video.pause();
-                    playPauseBtn.textContent = '▶';
+                    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
                 }
             }
             
@@ -302,24 +429,28 @@
                     lastVolume = video.volume;
                     video.volume = 0;
                     volumeSlider.value = 0;
-                    volumeBtn.textContent = '🔇';
+                    volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
                 } else {
                     video.volume = lastVolume;
                     volumeSlider.value = lastVolume;
-                    volumeBtn.textContent = lastVolume >= 0.5 ? '🔊' : '🔉';
+                    updateVolumeIcon();
                 }
             });
             
             volumeSlider.addEventListener('input', function() {
                 video.volume = volumeSlider.value;
-                if (video.volume == 0) {
-                    volumeBtn.textContent = '🔇';
-                } else if (video.volume < 0.5) {
-                    volumeBtn.textContent = '🔉';
-                } else {
-                    volumeBtn.textContent = '🔊';
-                }
+                updateVolumeIcon();
             });
+            
+            function updateVolumeIcon() {
+                if (video.volume == 0) {
+                    volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                } else if (video.volume < 0.5) {
+                    volumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+                } else {
+                    volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                }
+            }
             
             // Progress bar
             function updateProgress() {
@@ -362,6 +493,7 @@
                     } else if (videoContainer.msRequestFullscreen) {
                         videoContainer.msRequestFullscreen();
                     }
+                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
                 } else {
                     if (document.exitFullscreen) {
                         document.exitFullscreen();
@@ -370,6 +502,7 @@
                     } else if (document.msExitFullscreen) {
                         document.msExitFullscreen();
                     }
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
                 }
             });
             
@@ -420,10 +553,10 @@
             
             // Handle video end
             video.addEventListener('ended', function() {
-                playPauseBtn.textContent = '▶';
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
                 progressBar.style.width = '0%';
             });
         });
     </script>
 </body>
-  </html>
+                            </html>
