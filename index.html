@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube-Style Video Player</title>
+    <title>TutorUp Video Player</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -19,22 +19,48 @@
             padding-top: 56.25vw; /* Maintain 16:9 aspect ratio for fixed player */
         }
 
-        .container {
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            z-index: 2000;
             display: flex;
-            max-width: 100%;
-            margin: 0;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        .main-content {
-            flex: 1;
-            padding: 24px 24px 24px 0;
-            max-width: 1280px;
-            margin: 0 auto;
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ff0000;
+        }
+
+        .logo span {
+            color: #0f0f0f;
+        }
+
+        .module-btn {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .module-btn:hover {
+            background: #cc0000;
         }
 
         .video-player-fixed {
             position: fixed;
-            top: 0;
+            top: 60px;
             left: 0;
             width: 100%;
             background: #000;
@@ -147,6 +173,12 @@
             font-size: 20px;
         }
 
+        .skip-btn {
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+        }
+
         .volume-container {
             display: flex;
             align-items: center;
@@ -200,208 +232,93 @@
 
         /* Video info section */
         .video-info {
-            padding: 16px 0;
+            padding: 16px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             border-bottom: 1px solid #e5e5e5;
+        }
+
+        .channel-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #ff0000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            flex-shrink: 0;
         }
 
         .video-title {
             font-size: 18px;
             font-weight: 500;
-            margin-bottom: 12px;
         }
 
-        .video-metadata {
+        /* Additional videos section */
+        .additional-videos {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
+            padding: 20px;
+            gap: 15px;
+            overflow-x: auto;
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
         }
 
-        .views-date {
-            color: #606060;
-            font-size: 14px;
-        }
-
-        .video-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: none;
-            border: none;
-            color: #606060;
+        .additional-video {
+            flex: 0 0 auto;
+            width: 240px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 8px;
-            border-radius: 18px;
-            transition: background 0.2s;
+            transition: transform 0.2s;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .action-btn:hover {
-            background: #f2f2f2;
+        .additional-video:hover {
+            transform: translateY(-5px);
         }
 
-        .action-btn i {
-            font-size: 16px;
-        }
-
-        .like-btn.active {
-            color: #ff0000;
-        }
-
-        .subscribe-btn {
-            background: #cc0000;
-            color: white;
-            padding: 10px 16px;
-            font-weight: 500;
-            border-radius: 20px;
-        }
-
-        .subscribe-btn:hover {
-            background: #aa0000;
-        }
-
-        /* Channel info */
-        .channel-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 16px 0;
-        }
-
-        .channel-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
+        .additional-thumbnail {
+            width: 100%;
+            height: 135px;
             background: #ddd;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #666;
+            position: relative;
         }
 
-        .channel-details {
-            flex: 1;
-        }
-
-        .channel-name {
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
-        .channel-subs {
-            color: #606060;
-            font-size: 14px;
-        }
-
-        /* Comments section */
-        .comments {
-            margin-top: 24px;
-        }
-
-        .comments-title {
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 16px;
-        }
-
-        .comment {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .comment-avatar {
+        .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: #ddd;
-            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #666;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
 
-        .comment-content {
-            flex: 1;
+        .additional-video:hover .play-icon {
+            opacity: 1;
         }
 
-        .comment-author {
-            font-weight: 500;
-            margin-bottom: 4px;
+        .additional-info {
+            padding: 12px;
         }
 
-        .comment-text {
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
-        .comment-actions {
-            display: flex;
-            gap: 16px;
-            color: #606060;
-            font-size: 14px;
-        }
-
-        .comment-action {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-
-        /* Recommended videos */
-        .recommended-videos {
-            width: 402px;
-            padding: 24px 0 24px 24px;
-            flex-shrink: 0;
-            border-left: 1px solid #e5e5e5;
-        }
-
-        .recommended-title {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 16px;
-        }
-
-        .recommended-video {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            cursor: pointer;
-            transition: background 0.2s;
-            padding: 8px;
-            border-radius: 8px;
-        }
-
-        .recommended-video:hover {
-            background: #f2f2f2;
-        }
-
-        .recommended-thumbnail {
-            width: 168px;
-            height: 94px;
-            background: #ddd;
-            border-radius: 4px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            font-size: 12px;
-        }
-
-        .recommended-info {
-            flex: 1;
-        }
-
-        .recommended-video-title {
+        .additional-title {
             font-weight: 500;
             font-size: 14px;
             margin-bottom: 4px;
@@ -411,44 +328,60 @@
             overflow: hidden;
         }
 
-        .recommended-channel {
+        .additional-channel {
             color: #606060;
             font-size: 12px;
-            margin-bottom: 4px;
         }
 
-        .recommended-metadata {
-            color: #606060;
-            font-size: 12px;
+        /* Content section */
+        .content {
+            padding: 20px;
+            background: #fff;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .content h2 {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e5e5;
         }
 
         /* Mobile optimizations */
-        @media (max-width: 1200px) {
-            .container {
-                flex-direction: column;
-            }
-            
-            .recommended-videos {
-                width: 100%;
-                border-left: none;
-                border-top: 1px solid #e5e5e5;
-                padding: 24px;
-            }
-            
-            .main-content {
-                padding: 24px;
-            }
-        }
-
         @media (max-width: 768px) {
-            .video-actions {
-                flex-wrap: wrap;
+            .header {
+                padding: 10px 15px;
             }
             
-            .video-metadata {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
+            .logo {
+                font-size: 20px;
+            }
+            
+            .module-btn {
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+            
+            .video-info {
+                padding: 12px;
+            }
+            
+            .video-title {
+                font-size: 16px;
+            }
+            
+            .additional-videos {
+                padding: 15px;
+                gap: 10px;
+            }
+            
+            .additional-video {
+                width: 200px;
+            }
+            
+            .additional-thumbnail {
+                height: 112px;
             }
             
             .volume-slider {
@@ -475,6 +408,11 @@
     </style>
 </head>
 <body>
+    <div class="header">
+        <div class="logo">Tutor<span>Up</span></div>
+        <button class="module-btn">Module</button>
+    </div>
+
     <div class="video-player-fixed">
         <div class="video-container" id="videoContainer">
             <video class="video-player" id="videoPlayer">
@@ -491,8 +429,14 @@
                 
                 <div class="controls">
                     <div class="left-controls">
+                        <button class="control-btn skip-btn" id="skipBackBtn">
+                            <i class="fas fa-backward"></i>
+                        </button>
                         <button class="control-btn play-pause" id="playPauseBtn">
                             <i class="fas fa-play"></i>
+                        </button>
+                        <button class="control-btn skip-btn" id="skipForwardBtn">
+                            <i class="fas fa-forward"></i>
                         </button>
                         
                         <div class="volume-container">
@@ -522,152 +466,76 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="container">
-        <div class="main-content">
-            <div class="video-info">
-                <h1 class="video-title">Amazing Nature Documentary - Beautiful Scenery & Wildlife</h1>
-                
-                <div class="video-metadata">
-                    <div class="views-date">1,234,567 views • Premiered on Jun 15, 2023</div>
-                    
-                    <div class="video-actions">
-                        <button class="action-btn like-btn" id="likeBtn">
-                            <i class="fas fa-thumbs-up"></i>
-                            <span>24K</span>
-                        </button>
-                        <button class="action-btn dislike-btn">
-                            <i class="fas fa-thumbs-down"></i>
-                            <span>423</span>
-                        </button>
-                        <button class="action-btn">
-                            <i class="fas fa-comment"></i>
-                            <span>3.2K</span>
-                        </button>
-                        <button class="action-btn">
-                            <i class="fas fa-download"></i>
-                            <span>Download</span>
-                        </button>
-                        <button class="action-btn">
-                            <i class="fas fa-clipboard"></i>
-                            <span>Save</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="channel-info">
-                    <div class="channel-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="channel-details">
-                        <div class="channel-name">Nature Documentaries</div>
-                        <div class="channel-subs">1.2M subscribers</div>
-                    </div>
-                    <button class="subscribe-btn">SUBSCRIBE</button>
-                </div>
+        
+        <div class="video-info">
+            <div class="channel-logo">
+                <i class="fas fa-play"></i>
             </div>
-            
-            <div class="comments">
-                <h3 class="comments-title">423 Comments</h3>
-                
-                <div class="comment">
-                    <div class="comment-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="comment-content">
-                        <div class="comment-author">John Doe <span class="comment-time">• 2 days ago</span></div>
-                        <p class="comment-text">This is absolutely breathtaking! The cinematography is outstanding. I've watched this three times already.</p>
-                        <div class="comment-actions">
-                            <div class="comment-action">
-                                <i class="fas fa-thumbs-up"></i> 243
-                            </div>
-                            <div class="comment-action">
-                                <i class="fas fa-thumbs-down"></i> 2
-                            </div>
-                            <div class="comment-action">REPLY</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="comment">
-                    <div class="comment-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="comment-content">
-                        <div class="comment-author">Jane Smith <span class="comment-time">• 1 week ago</span></div>
-                        <p class="comment-text">The scene at 4:32 is my favorite! The way the light hits the water is just magical.</p>
-                        <div class="comment-actions">
-                            <div class="comment-action">
-                                <i class="fas fa-thumbs-up"></i> 187
-                            </div>
-                            <div class="comment-action">
-                                <i class="fas fa-thumbs-down"></i> 5
-                            </div>
-                            <div class="comment-action">REPLY</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div class="video-title">Amazing Nature Documentary - Beautiful Scenery & Wildlife</div>
         </div>
         
-        <div class="recommended-videos">
-            <h3 class="recommended-title">Recommended</h3>
-            
-            <div class="recommended-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">
-                <div class="recommended-thumbnail">Thumbnail</div>
-                <div class="recommended-info">
-                    <div class="recommended-video-title">Elephants Dream - Animated Short Film</div>
-                    <div class="recommended-channel">Animation Studio</div>
-                    <div class="recommended-metadata">4.2M views • 2 years ago</div>
+        <div class="additional-videos">
+            <div class="additional-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">
+                <div class="additional-thumbnail">
+                    Thumbnail 1
+                    <div class="play-icon"><i class="fas fa-play"></i></div>
+                </div>
+                <div class="additional-info">
+                    <div class="additional-title">Elephants Dream - Animated Short Film</div>
+                    <div class="additional-channel">Animation Studio</div>
                 </div>
             </div>
             
-            <div class="recommended-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4">
-                <div class="recommended-thumbnail">Thumbnail</div>
-                <div class="recommended-info">
-                    <div class="recommended-video-title">For Bigger Blazes - High Quality Video</div>
-                    <div class="recommended-channel">Tech Videos</div>
-                    <div class="recommended-metadata">8.7M views • 3 months ago</div>
+            <div class="additional-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4">
+                <div class="additional-thumbnail">
+                    Thumbnail 2
+                    <div class="play-icon"><i class="fas fa-play"></i></div>
+                </div>
+                <div class="additional-info">
+                    <div class="additional-title">For Bigger Blazes - High Quality Video</div>
+                    <div class="additional-channel">Tech Videos</div>
                 </div>
             </div>
             
-            <div class="recommended-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4">
-                <div class="recommended-thumbnail">Thumbnail</div>
-                <div class="recommended-info">
-                    <div class="recommended-video-title">For Bigger Escapes - Amazing Adventure</div>
-                    <div class="recommended-channel">Adventure Channel</div>
-                    <div class="recommended-metadata">2.1M views • 1 year ago</div>
+            <div class="additional-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4">
+                <div class="additional-thumbnail">
+                    Thumbnail 3
+                    <div class="play-icon"><i class="fas fa-play"></i></div>
+                </div>
+                <div class="additional-info">
+                    <div class="additional-title">For Bigger Escapes - Amazing Adventure</div>
+                    <div class="additional-channel">Adventure Channel</div>
                 </div>
             </div>
             
-            <div class="recommended-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4">
-                <div class="recommended-thumbnail">Thumbnail</div>
-                <div class="recommended-info">
-                    <div class="recommended-video-title">For Bigger Fun - Entertainment Compilation</div>
-                    <div class="recommended-channel">Fun Videos</div>
-                    <div class="recommended-metadata">5.6M views • 8 months ago</div>
+            <div class="additional-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4">
+                <div class="additional-thumbnail">
+                    Thumbnail 4
+                    <div class="play-icon"><i class="fas fa-play"></i></div>
+                </div>
+                <div class="additional-info">
+                    <div class="additional-title">For Bigger Fun - Entertainment Compilation</div>
+                    <div class="additional-channel">Fun Videos</div>
                 </div>
             </div>
             
-            <div class="recommended-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4">
-                <div class="recommended-thumbnail">Thumbnail</div>
-                <div class="recommended-info">
-                    <div class="recommended-video-title">For Bigger Joyrides - Extreme Sports</div>
-                    <div class="recommended-channel">Sports Network</div>
-                    <div class="recommended-metadata">3.4M views • 6 months ago</div>
+            <div class="additional-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4">
+                <div class="additional-thumbnail">
+                    Thumbnail 5
+                    <div class="play-icon"><i class="fas fa-play"></i></div>
                 </div>
-            </div>
-            
-            <div class="recommended-video" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4">
-                <div class="recommended-thumbnail">Thumbnail</div>
-                <div class="recommended-info">
-                    <div class="recommended-video-title">For Bigger Meltdowns - Epic Fails Compilation</div>
-                    <div class="recommended-channel">Funny Moments</div>
-                    <div class="recommended-metadata">12M views • 1 year ago</div>
+                <div class="additional-info">
+                    <div class="additional-title">For Bigger Joyrides - Extreme Sports</div>
+                    <div class="additional-channel">Sports Network</div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="content">
+        <h2>About This Video</h2>
+        <p>This amazing nature documentary showcases beautiful scenery and wildlife from around the world. Experience breathtaking landscapes, fascinating animal behaviors, and stunning cinematography that brings the natural world to life.</p>
+        <p>Filmed over three years across five continents, this documentary represents one of the most comprehensive looks at our planet's diverse ecosystems ever produced.</p>
     </div>
 
     <script>
@@ -684,8 +552,9 @@
             const speedSelect = document.getElementById('speedSelect');
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             const controlsContainer = document.getElementById('controlsContainer');
-            const likeBtn = document.getElementById('likeBtn');
-            const recommendedVideos = document.querySelectorAll('.recommended-video');
+            const skipBackBtn = document.getElementById('skipBackBtn');
+            const skipForwardBtn = document.getElementById('skipForwardBtn');
+            const additionalVideos = document.querySelectorAll('.additional-video');
             
             // Store last volume before mute
             let lastVolume = 1;
@@ -703,6 +572,15 @@
             
             playPauseBtn.addEventListener('click', togglePlayPause);
             video.addEventListener('click', togglePlayPause);
+            
+            // Skip buttons functionality
+            skipBackBtn.addEventListener('click', function() {
+                video.currentTime = Math.max(0, video.currentTime - 10);
+            });
+            
+            skipForwardBtn.addEventListener('click', function() {
+                video.currentTime = Math.min(video.duration, video.currentTime + 10);
+            });
             
             // Volume control
             volumeBtn.addEventListener('click', function() {
@@ -787,14 +665,9 @@
                 }
             });
             
-            // Like button functionality
-            likeBtn.addEventListener('click', function() {
-                this.classList.toggle('active');
-            });
-            
-            // Recommended videos functionality
-            recommendedVideos.forEach(recVideo => {
-                recVideo.addEventListener('click', function() {
+            // Additional videos functionality
+            additionalVideos.forEach(videoElement => {
+                videoElement.addEventListener('click', function() {
                     const videoSrc = this.getAttribute('data-video');
                     video.src = videoSrc;
                     video.load();
@@ -802,10 +675,7 @@
                     playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
                     
                     // Update video title
-                    document.querySelector('.video-title').textContent = this.querySelector('.recommended-video-title').textContent;
-                    
-                    // Scroll to top to see the video
-                    window.scrollTo(0, 0);
+                    document.querySelector('.video-title').textContent = this.querySelector('.additional-title').textContent;
                 });
             });
             
@@ -863,3 +733,4 @@
     </script>
 </body>
 </html>
+      
