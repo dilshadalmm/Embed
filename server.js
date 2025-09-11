@@ -1,6 +1,6 @@
-import express from 'express';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import cors from 'cors'; // Import the cors module
+const express = require('express');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const cors = require('cors');
 
 // IMPORTANT: Make sure your API key is in your environment variables.
 const API_KEY = process.env.GEMINI_API_KEY;
@@ -12,7 +12,7 @@ if (!API_KEY) {
 
 const app = express();
 app.use(express.json());
-app.use(cors()); // Enable CORS to allow requests from your HTML file
+app.use(cors());
 
 // Initialize the Google Generative AI client
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -40,3 +40,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+            
