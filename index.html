@@ -217,6 +217,11 @@
             gap: 10px;
             align-items: center;
             flex-shrink: 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .dark-mode .input-container {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .input-container textarea {
@@ -388,6 +393,11 @@
             
             // Prevent text selection
             disableTextSelection();
+            
+            // Focus on input field
+            setTimeout(() => {
+                messageInput.focus();
+            }, 500);
         }
 
         // Load messages from Firebase and localStorage
