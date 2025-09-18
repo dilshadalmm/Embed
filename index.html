@@ -3,907 +3,546 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TutorUp - Secure Learning Platform</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <title>ChatCode</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
+        :root {
+            --primary-color: #128C7E;
+            --secondary-color: #25D366;
+            --dark-bg: #075E54;
+            --light-bg: #e5ddd5;
+            --chat-outgoing: #dcf8c6;
+            --chat-incoming: #ffffff;
+            --text-light: #ffffff;
+            --text-dark: #4a4a4a;
+            --text-gray: #8696a0;
+            --border-radius: 8px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --bg-color: #f0f0f0;
+            --nav-bg: #128C7E;
+            --input-bg: #ffffff;
+            --msg-bg-out: #DCF8C6;
+            --msg-bg-in: #FFFFFF;
+            --text-color: #333333;
+        }
+
+        .dark-mode {
+            --bg-color: #0a1a1f;
+            --nav-bg: #1f2c33;
+            --input-bg: #1f2c33;
+            --msg-bg-out: #005c4b;
+            --msg-bg-in: #202c33;
+            --text-color: #e6e6e6;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'PT Sans', sans-serif;
-            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
             -webkit-user-select: none;
-            -khtml-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+            touch-action: manipulation;
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            overflow-x: hidden;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 420px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            margin: 0;
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
             overflow: hidden;
         }
 
-        .header {
-            background: #4f46e5;
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
-        .form-container {
-            padding: 30px 20px;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 100%;
+            margin: 0 auto;
             position: relative;
         }
 
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #374151;
-            font-size: 14px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 14px 14px 14px 45px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .input-group input:focus {
-            border-color: #4f46e5;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-        }
-
-        .input-group i {
-            position: absolute;
-            left: 15px;
-            top: 42px;
-            color: #9ca3af;
-            font-size: 18px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        /* Top Navigation */
+        #top-nav {
             display: flex;
-            justify-content: center;
             align-items: center;
-        }
-
-        .btn:hover {
-            background: #4338ca;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn i {
-            margin-right: 10px;
-        }
-
-        .links {
-            display: flex;
             justify-content: space-between;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-
-        .links a {
-            color: #4f46e5;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .links a:hover {
-            color: #4338ca;
-            text-decoration: underline;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 25px 0;
-            color: #9ca3af;
-        }
-
-        .divider::before, .divider::after {
-            content: "";
-            flex: 1;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .divider span {
-            padding: 0 15px;
-        }
-
-        .social-login {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .social-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .social-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .social-btn.google:hover {
-            background: #fef3f3;
-            border-color: #fecaca;
-        }
-
-        .social-btn.facebook:hover {
-            background: #eff6ff;
-            border-color: #bfdbfe;
-        }
-
-        .social-btn i {
-            font-size: 20px;
-        }
-
-        .google i {
-            color: #db4437;
-        }
-
-        .facebook i {
-            color: #4267B2;
-        }
-
-        .form-toggle {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 14px;
-            color: #6b7280;
-        }
-
-        .form-toggle a {
-            color: #4f46e5;
-            text-decoration: none;
-            font-weight: 600;
-            margin-left: 5px;
-        }
-
-        .form-toggle a:hover {
-            text-decoration: underline;
-        }
-
-        .alert {
+            background: var(--nav-bg);
+            color: var(--text-light);
             padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
+            height: 60px;
+            z-index: 100;
+            flex-shrink: 0;
         }
 
-        .alert.error {
-            background: #fef3f3;
-            border: 1px solid #fecaca;
-            color: #dc2626;
+        #top-nav .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.2rem;
         }
 
-        .alert.success {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #16a34a;
+        #top-nav .logo svg {
+            margin-right: 8px;
+            width: 24px;
+            height: 24px;
         }
 
-        /* Form states */
-        #forgotPasswordForm, #registerForm, #dashboard {
-            display: none;
+        #top-nav .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .loader {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+        #top-nav .avatar {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
-            display: none;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Dashboard Styles */
-        .dashboard-header {
-            background: #4f46e5;
+            background-color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
             color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
-        .user-info {
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
+            justify-content: center;
         }
 
-        .user-avatar {
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Chat Interface */
+        #chat {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23d4d4d4' fill-opacity='0.2' fill-rule='evenodd'/%3E%3C/svg%3E");
+            background-color: var(--bg-color);
+        }
+
+        #chat-container {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .message {
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 70%;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            line-height: 1.4;
+            position: relative;
+            margin-bottom: 5px;
+            animation: fadeIn 0.2s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background: var(--msg-bg-out);
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .friend-message {
+            background: var(--msg-bg-in);
+            align-self: flex-start;
+            box-shadow: var(--shadow);
+            border-bottom-left-radius: 2px;
+        }
+
+        .username {
+            font-weight: 600;
+            font-size: 0.85em;
+            margin-bottom: 3px;
+            color: #128C7E;
+        }
+
+        .dark-mode .username {
+            color: #6bc4a6;
+        }
+
+        .timestamp {
+            font-size: 0.7em;
+            color: var(--text-gray);
+            text-align: right;
+            margin-top: 2px;
+            margin-left: 10px;
+            display: inline-block;
+        }
+
+        .delete-btn {
+            font-size: 0.8em;
+            cursor: pointer;
+            color: #f44336;
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .message.user-message:hover .delete-btn {
+            display: block;
+        }
+
+        .input-container {
+            display: flex;
+            padding: 10px 16px;
+            background: var(--input-bg);
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .input-container textarea {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 20px;
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: inherit;
+            font-size: 1rem;
+            max-height: 120px;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.08);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+
+        .dark-mode .input-container textarea {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .send-button {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 50%;
             width: 40px;
             height: 40px;
-            background: #7c73e6;
-            border-radius: 50%;
             display: flex;
-            justify-content: center;
             align-items: center;
-            margin-right: 10px;
-            font-weight: bold;
-        }
-
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
+            justify-content: center;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background 0.3s;
+            flex-shrink: 0;
         }
 
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .send-button:hover {
+            background: #0c7a6d;
         }
 
-        .dashboard-content {
-            padding: 20px;
+        .send-button svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
         }
 
-        .welcome-section {
-            margin-bottom: 30px;
+        a {
+            color: #0645AD;
+            text-decoration: underline;
+            word-break: break-word;
         }
 
-        .welcome-section h2 {
-            color: #1f2937;
-            margin-bottom: 10px;
+        /* Custom scrollbar for webkit browsers */
+        #chat-container::-webkit-scrollbar {
+            width: 6px;
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
+        #chat-container::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        .stat-card {
-            background: #f9fafb;
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        #chat-container::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
         }
 
-        .stat-card i {
-            font-size: 24px;
-            color: #4f46e5;
-            margin-bottom: 10px;
+        .dark-mode #chat-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        .stat-card h3 {
-            font-size: 20px;
-            margin-bottom: 5px;
-            color: #1f2937;
-        }
-
-        .stat-card p {
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .courses-section h3 {
-            margin-bottom: 15px;
-            color: #1f2937;
-        }
-
-        .course-list {
-            list-style: none;
-        }
-
-        .course-item {
-            padding: 12px 15px;
-            border-left: 4px solid #4f46e5;
-            background: #f9fafb;
-            margin-bottom: 10px;
-            border-radius: 0 8px 8px 0;
-        }
-
-        .course-item h4 {
-            margin-bottom: 5px;
-            color: #1f2937;
-        }
-
-        .course-item p {
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        @media (max-width: 480px) {
-            .container {
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            #app-container {
+                max-width: 800px;
+                height: 95vh;
+                margin: 2.5vh auto;
                 border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             }
             
-            .header {
-                padding: 25px 15px;
+            body {
+                background: #3a4a52;
+                padding: 10px;
             }
-            
-            .form-container {
-                padding: 25px 15px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Security restrictions */
-        body {
-            touch-action: manipulation;
-            overflow-x: hidden;
-        }
-        
-        img {
-            pointer-events: none;
-        }
-        
-        /* Prevent text selection */
-        .no-select {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Auth Header -->
-        <div class="header" id="authHeader">
-            <h1>TutorUp</h1>
-            <p>Secure authentication for your learning journey</p>
-        </div>
-
-        <!-- Dashboard Header -->
-        <div class="dashboard-header" id="dashboardHeader">
-            <div class="user-info">
-                <div class="user-avatar" id="userAvatar">U</div>
-                <div>
-                    <div id="userName">User Name</div>
-                    <small id="userEmail">user@example.com</small>
-                </div>
+    <div id="app-container">
+        <div id="top-nav">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.864 3.488"/>
+                </svg>
+                ChatCode
             </div>
-            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            <div class="user-info">
+                <button class="theme-toggle" id="theme-toggle">
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M12,18C11.11,18 10.26,17.8 9.5,17.45C11.56,16.5 13,14.42 13,12C13,9.58 11.56,7.5 9.5,6.55C10.26,6.2 11.11,6 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z" />
+                    </svg>
+                </button>
+                <div class="avatar" id="nav-avatar">U</div>
+            </div>
         </div>
 
-        <div class="form-container">
-            <div id="errorMessage" class="alert error"></div>
-            <div id="successMessage" class="alert success"></div>
-
-            <!-- Login Form -->
-            <form id="loginForm">
-                <div class="input-group">
-                    <label for="loginEmail">Email</label>
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
-                </div>
-                <div class="input-group">
-                    <label for="loginPassword">Password</label>
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
-                </div>
-                <button type="submit" class="btn" id="loginBtn">
-                    <div class="loader" id="loginLoader"></div>
-                    <i class="fas fa-sign-in-alt"></i> Sign In
-                </button>
-                
-                <div class="links">
-                    <a href="#" id="forgotPasswordLink">Forgot password?</a>
-                    <a href="#" id="registerLink">Create account</a>
-                </div>
-                
-                <div class="divider"><span>Or continue with</span></div>
-                
-                <div class="social-login">
-                    <div class="social-btn google">
-                        <i class="fab fa-google"></i>
-                    </div>
-                    <div class="social-btn facebook">
-                        <i class="fab fa-facebook-f"></i>
-                    </div>
-                </div>
-            </form>
-
-            <!-- Registration Form -->
-            <form id="registerForm">
-                <div class="input-group">
-                    <label for="registerName">Full Name</label>
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="registerName" placeholder="Enter your full name" required>
-                </div>
-                <div class="input-group">
-                    <label for="registerEmail">Email</label>
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="registerEmail" placeholder="Enter your email" required>
-                </div>
-                <div class="input-group">
-                    <label for="registerPassword">Password</label>
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="registerPassword" placeholder="Create a password (min. 6 characters)" required>
-                </div>
-                <div class="input-group">
-                    <label for="registerConfirmPassword">Confirm Password</label>
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="registerConfirmPassword" placeholder="Confirm your password" required>
-                </div>
-                <button type="submit" class="btn" id="registerBtn">
-                    <div class="loader" id="registerLoader"></div>
-                    <i class="fas fa-user-plus"></i> Create Account
-                </button>
-                
-                <div class="form-toggle">
-                    Already have an account? <a href="#" id="loginLink">Sign In</a>
-                </div>
-            </form>
-
-            <!-- Forgot Password Form -->
-            <form id="forgotPasswordForm">
-                <div class="input-group">
-                    <label for="resetEmail">Email</label>
-                    <i class="fas fa-envelope"></i>
-                    <input type="email" id="resetEmail" placeholder="Enter your email" required>
-                </div>
-                <button type="submit" class="btn" id="resetBtn">
-                    <div class="loader" id="resetLoader"></div>
-                    <i class="fas fa-paper-plane"></i> Send Reset Link
-                </button>
-                
-                <div class="form-toggle">
-                    Remember your password? <a href="#" id="backToLoginLink">Sign In</a>
-                </div>
-            </form>
-
-            <!-- Dashboard -->
-            <div id="dashboard">
-                <div class="welcome-section">
-                    <h2>Welcome back, <span id="dashboardUserName">Student</span>!</h2>
-                    <p>Continue your learning journey with TutorUp.</p>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <i class="fas fa-book"></i>
-                        <h3>5</h3>
-                        <p>Active Courses</p>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fas fa-clock"></i>
-                        <h3>12h</h3>
-                        <p>Learning Time</p>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fas fa-trophy"></i>
-                        <h3>3</h3>
-                        <p>Certificates</p>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fas fa-calendar"></i>
-                        <h3>2</h3>
-                        <p>Upcoming Classes</p>
-                    </div>
-                </div>
-
-                <div class="courses-section">
-                    <h3>Your Courses</h3>
-                    <ul class="course-list">
-                        <li class="course-item">
-                            <h4>Mathematics 101</h4>
-                            <p>Next class: Tomorrow at 10:00 AM</p>
-                        </li>
-                        <li class="course-item">
-                            <h4>English Literature</h4>
-                            <p>Assignment due: Sep 15</p>
-                        </li>
-                        <li class="course-item">
-                            <h4>Computer Science</h4>
-                            <p>Live session: Friday at 2:00 PM</p>
-                        </li>
-                    </ul>
+        <!-- Chat Interface -->
+        <div id="chat">
+            <div id="chat-container"></div>
+            <div class="input-container">
+                <textarea id="message-input" rows="1" placeholder="Type a message"></textarea>
+                <div class="send-button" id="send-btn">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M2,21L23,12L2,3V10L17,12L2,14V21Z" />
+                    </svg>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Firebase configuration
+        // Firebase config
         const firebaseConfig = {
-            apiKey: "AIzaSyB7t1epo6Vsi-zhjmFoYEkznUfmAoxfRyY",
-            authDomain: "tutorup-dilshad.firebaseapp.com",
-            projectId: "tutorup-dilshad",
-            storageBucket: "tutorup-dilshad.firebasestorage.app",
-            messagingSenderId: "845385268581",
-            appId: "1:845385268581:web:8af0729bd46012dc3a758c",
-            measurementId: "G-XQE1WF1V63"
+            apiKey: "AIzaSyD24bNk7GLLLPaFFpI-_bmfhXKWIXDiwEk",
+            authDomain: "chatcodee.firebaseapp.com",
+            databaseURL: "https://chatcodee-default-rtdb.firebaseio.com/",
+            projectId: "chatcodee",
+            storageBucket: "chatcodee.firebasestorage.app",
+            messagingSenderId: "773326415522",
+            appId: "1:773326415522:web:0dafff23ba1a111ee899fb"
         };
-
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+        const db = firebase.database();
 
-        // DOM Elements
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
-        const dashboard = document.getElementById('dashboard');
-        const authHeader = document.getElementById('authHeader');
-        const dashboardHeader = document.getElementById('dashboardHeader');
-        const errorMessage = document.getElementById('errorMessage');
-        const successMessage = document.getElementById('successMessage');
-        const userNameElement = document.getElementById('userName');
-        const userEmailElement = document.getElementById('userEmail');
-        const userAvatar = document.getElementById('userAvatar');
-        const dashboardUserName = document.getElementById('dashboardUserName');
-        const logoutBtn = document.getElementById('logoutBtn');
+        // UI Elements
+        const chatDiv = document.getElementById('chat');
+        const chatContainer = document.getElementById('chat-container');
+        const navAvatar = document.getElementById('nav-avatar');
+        const themeToggle = document.getElementById('theme-toggle');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
 
-        // Form Toggle Links
-        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
-        const registerLink = document.getElementById('registerLink');
-        const loginLink = document.getElementById('loginLink');
-        const backToLoginLink = document.getElementById('backToLoginLink');
+        // App state
+        const chatCode = 'Inspecting123';
+        let currentUserId = Date.now();
+        let username = 'User' + Math.floor(Math.random() * 1000);
+        let localChat = [];
+        let isDarkMode = localStorage.getItem('darkMode') === 'true';
 
-        // Buttons with loaders
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const loginLoader = document.getElementById('loginLoader');
-        const registerLoader = document.getElementById('registerLoader');
-        const resetLoader = document.getElementById('resetLoader');
-
-        // Security restrictions
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-        
-        document.addEventListener('keydown', function(e) {
-            // Disable zooming with Ctrl+/-/0
-            if ((e.ctrlKey || e.metaKey) && 
-                (e.key === '+' || e.key === '-' || e.key === '0' || e.key === '=')) {
-                e.preventDefault();
+        // Initialize the app
+        function initApp() {
+            // Apply saved theme
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                themeToggle.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A7,7 0 0,1 19,9C19,11.38 17.81,13.47 16,14.74V17A1,1 0 0,1 15,18H9A1,1 0 0,1 8,17V14.74C6.19,13.47 5,11.38 5,9A7,7 0 0,1 12,2M9,21V20H15V21A1,1 0 0,1 14,22H10A1,1 0 0,1 9,21M12,4A5,5 0 0,0 7,9C7,11.05 8.23,12.81 10,13.58V16H14V13.58C15.77,12.81 17,11.05 17,9A5,5 0 0,0 12,4Z" /></svg>`;
             }
             
-            // Disable F12 and Ctrl+Shift+I
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
-                e.preventDefault();
-            }
-        });
-        
-        // Prevent zooming on mobile with double-tap
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
-        
-        // Prevent elastic scrolling
-        document.addEventListener('touchmove', function(event) {
-            if (event.scale !== 1) {
-                event.preventDefault();
-            }
-        }, { passive: false });
+            // Set user info
+            navAvatar.textContent = username.charAt(0).toUpperCase();
+            
+            // Show chat interface directly (no auth)
+            chatDiv.style.display = 'flex';
+            
+            // Load messages
+            loadMessages();
+            
+            // Prevent zooming
+            disableZoom();
+            
+            // Prevent text selection
+            disableTextSelection();
+        }
 
-        // Show/hide forms
-        function showForm(formToShow) {
-            loginForm.style.display = 'none';
-            registerForm.style.display = 'none';
-            forgotPasswordForm.style.display = 'none';
-            dashboard.style.display = 'none';
-            authHeader.style.display = 'block';
-            dashboardHeader.style.display = 'none';
-            
-            if (formToShow) {
-                formToShow.style.display = 'block';
-            }
-            
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
-            
-            // Clear all form fields when switching
-            document.querySelectorAll('input').forEach(input => {
-                input.value = '';
+        // Load messages from Firebase and localStorage
+        function loadMessages() {
+            // Load messages from localStorage first
+            localChat = JSON.parse(localStorage.getItem('chat_' + chatCode)) || [];
+            localChat.forEach(displayMessage);
+
+            // Listen to new messages from Firebase
+            db.ref('chats/' + chatCode).on('child_added', snapshot => {
+                const msg = snapshot.val();
+                
+                // Check if we already have this message
+                if (!localChat.find(m => m.text === msg.text && m.userId === msg.userId && m.timestamp === msg.timestamp)) {
+                    displayMessage(msg);
+                    localChat.push(msg);
+                    localStorage.setItem('chat_' + chatCode, JSON.stringify(localChat));
+                }
             });
         }
 
-        function showDashboard() {
-            loginForm.style.display = 'none';
-            registerForm.style.display = 'none';
-            forgotPasswordForm.style.display = 'none';
-            dashboard.style.display = 'block';
-            authHeader.style.display = 'none';
-            dashboardHeader.style.display = 'flex';
+        // Format message text with link detection
+        function linkify(text) {
+            const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+            return text.replace(urlPattern, url => `<a href="${url}" target="_blank">${url}</a>`);
         }
 
-        // Show loading state
-        function setLoading(button, loader, isLoading) {
-            if (isLoading) {
-                button.disabled = true;
-                loader.style.display = 'block';
-                button.querySelector('i').style.display = 'none';
+        // Format timestamp
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Display a message in the chat
+        function displayMessage(msg) {
+            const isCurrentUser = msg.userId === currentUserId;
+            
+            const div = document.createElement('div');
+            div.classList.add('message');
+            div.classList.add(isCurrentUser ? 'user-message' : 'friend-message');
+
+            // Add username for messages from others
+            if (!isCurrentUser) {
+                const usernameDiv = document.createElement('div');
+                usernameDiv.classList.add('username');
+                usernameDiv.textContent = msg.username;
+                div.appendChild(usernameDiv);
+            }
+
+            // Message text
+            const textDiv = document.createElement('div');
+            textDiv.innerHTML = linkify(msg.text);
+            div.appendChild(textDiv);
+
+            // Timestamp
+            const timeDiv = document.createElement('span');
+            timeDiv.classList.add('timestamp');
+            timeDiv.textContent = formatTimestamp(msg.timestamp);
+            div.appendChild(timeDiv);
+
+            // Delete button for own messages
+            if (isCurrentUser) {
+                const delBtn = document.createElement('span');
+                delBtn.textContent = 'Delete';
+                delBtn.classList.add('delete-btn');
+                delBtn.onclick = () => {
+                    if (msg.key) {
+                        db.ref('chats/' + chatCode + '/' + msg.key).remove();
+                    }
+                    div.remove();
+                    localChat = localChat.filter(m => m.timestamp !== msg.timestamp);
+                    localStorage.setItem('chat_' + chatCode, JSON.stringify(localChat));
+                };
+                div.appendChild(delBtn);
+            }
+
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Send a new message
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+            
+            const msgRef = db.ref('chats/' + chatCode).push();
+            const msg = {
+                text: text,
+                userId: currentUserId,
+                username: username,
+                timestamp: Date.now(),
+                key: msgRef.key
+            };
+            
+            msgRef.set(msg);
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+        }
+
+        // Toggle dark/light mode
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            
+            // Update icon
+            if (isDarkMode) {
+                themeToggle.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12,2A7,7 0 0,1 19,9C19,11.38 17.81,13.47 16,14.74V17A1,1 0 0,1 15,18H9A1,1 0 0,1 8,17V14.74C6.19,13.47 5,11.38 5,9A7,7 0 0,1 12,2M9,21V20H15V21A1,1 0 0,1 14,22H10A1,1 0 0,1 9,21M12,4A5,5 0 0,0 7,9C7,11.05 8.23,12.81 10,13.58V16H14V13.58C15.77,12.81 17,11.05 17,9A5,5 0 0,0 12,4Z" /></svg>`;
             } else {
-                button.disabled = false;
-                loader.style.display = 'none';
-                button.querySelector('i').style.display = 'inline-block';
+                themeToggle.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12,18C11.11,18 10.26,17.8 9.5,17.45C11.56,16.5 13,14.42 13,12C13,9.58 11.56,7.5 9.5,6.55C10.26,6.2 11.11,6 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z" /></svg>`;
             }
         }
 
-        // Event listeners for form toggling
-        forgotPasswordLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showForm(forgotPasswordForm);
-        });
-
-        registerLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showForm(registerForm);
-        });
-
-        loginLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showForm(loginForm);
-        });
-
-        backToLoginLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            showForm(loginForm);
-        });
-
-        logoutBtn.addEventListener('click', () => {
-            auth.signOut().then(() => {
-                showForm(loginForm);
+        // Disable zooming
+        function disableZoom() {
+            document.addEventListener('touchstart', function(event) {
+                if (event.touches.length > 1) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+            
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
             });
-        });
-
-        // Display messages
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            successMessage.style.display = 'none';
-            window.scrollTo(0, 0);
+            
+            document.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+            }, { passive: false });
         }
 
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.style.display = 'block';
-            errorMessage.style.display = 'none';
-            window.scrollTo(0, 0);
+        // Disable text selection
+        function disableTextSelection() {
+            document.addEventListener('selectstart', function(e) {
+                e.preventDefault();
+            });
         }
 
-        // Login functionality
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            setLoading(loginBtn, loginLoader, true);
-            
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Signed in
-                    showSuccess('Login successful! Redirecting...');
-                    updateUserInfo(userCredential.user);
-                    setTimeout(() => {
-                        showDashboard();
-                    }, 1500);
-                })
-                .catch((error) => {
-                    setLoading(loginBtn, loginLoader, false);
-                    let errorMsg = "An error occurred during sign in.";
-                    switch(error.code) {
-                        case 'auth/invalid-email':
-                            errorMsg = "The email address is not valid.";
-                            break;
-                        case 'auth/user-disabled':
-                            errorMsg = "This user account has been disabled.";
-                            break;
-                        case 'auth/user-not-found':
-                            errorMsg = "No user found with this email address.";
-                            break;
-                        case 'auth/wrong-password':
-                            errorMsg = "Incorrect password.";
-                            break;
-                    }
-                    showError(errorMsg);
-                });
-        });
-
-        // Registration functionality
-        registerForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('registerName').value;
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const confirmPassword = document.getElementById('registerConfirmPassword').value;
-
-            if (password.length < 6) {
-                showError('Password must be at least 6 characters long');
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                showError('Passwords do not match');
-                return;
-            }
-
-            setLoading(registerBtn, registerLoader, true);
-
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Signed up
-                    showSuccess('Account created successfully! You can now login.');
-                    // Update user profile with name
-                    userCredential.user.updateProfile({
-                        displayName: name
-                    }).then(() => {
-                        setLoading(registerBtn, registerLoader, false);
-                        // Switch to login form after a delay
-                        setTimeout(() => {
-                            showForm(loginForm);
-                        }, 2000);
-                    });
-                })
-                .catch((error) => {
-                    setLoading(registerBtn, registerLoader, false);
-                    let errorMsg = "An error occurred during registration.";
-                    switch(error.code) {
-                        case 'auth/email-already-in-use':
-                            errorMsg = "This email address is already in use.";
-                            break;
-                        case 'auth/invalid-email':
-                            errorMsg = "The email address is not valid.";
-                            break;
-                        case 'auth/operation-not-allowed':
-                            errorMsg = "Email/password accounts are not enabled.";
-                            break;
-                        case 'auth/weak-password':
-                            errorMsg = "The password is too weak.";
-                            break;
-                    }
-                    showError(errorMsg);
-                });
-        });
-
-        // Password reset functionality
-        forgotPasswordForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('resetEmail').value;
-
-            setLoading(resetBtn, resetLoader, true);
-
-            auth.sendPasswordResetEmail(email)
-                .then(() => {
-                    setLoading(resetBtn, resetLoader, false);
-                    showSuccess('Password reset email sent! Check your inbox.');
-                })
-                .catch((error) => {
-                    setLoading(resetBtn, resetLoader, false);
-                    let errorMsg = "An error occurred while sending reset email.";
-                    switch(error.code) {
-                        case 'auth/invalid-email':
-                            errorMsg = "The email address is not valid.";
-                            break;
-                        case 'auth/user-not-found':
-                            errorMsg = "No user found with this email address.";
-                            break;
-                    }
-                    showError(errorMsg);
-                });
-        });
-
-        // Update user info in dashboard
-        function updateUserInfo(user) {
-            const displayName = user.displayName || 'User';
-            const email = user.email || '';
-            
-            userNameElement.textContent = displayName;
-            userEmailElement.textContent = email;
-            dashboardUserName.textContent = displayName;
-            
-            // Set avatar initial
-            userAvatar.textContent = displayName.charAt(0).toUpperCase();
-        }
-
-        // Check if user is already logged in
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in, show dashboard
-                updateUserInfo(user);
-                showDashboard();
-            } else {
-                // User is signed out, show login form
-                showForm(loginForm);
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        themeToggle.addEventListener('click', toggleTheme);
+        
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
             }
         });
 
-        // Social login (placeholder for demo)
-        document.querySelector('.social-btn.google').addEventListener('click', () => {
-            showError('Google login not implemented in demo');
+        messageInput.addEventListener('input', () => {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
         });
 
-        document.querySelector('.social-btn.facebook').addEventListener('click', () => {
-            showError('Facebook login not implemented in demo');
-        });
-
-        // Initialize by showing login form
-        showForm(loginForm);
+        // Initialize the app
+        initApp();
     </script>
 </body>
 </html>
