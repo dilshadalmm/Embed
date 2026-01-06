@@ -1,0 +1,3727 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConceptBlitz - Admin Panel</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Merriweather', serif;
+            background: #f8fafc;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .conceptblitz-logo {
+            font-family: 'Anton', sans-serif;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+        
+        .concept-text {
+            color: #000000;
+        }
+        
+        .blitz-text {
+            color: #F97316;
+        }
+        
+        .admin-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .admin-header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-main {
+            display: flex;
+            flex: 1;
+        }
+        
+        .admin-sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        
+        .admin-content {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+        
+        .nav-item.active {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-left-color: #1d4ed8;
+        }
+        
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.375rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #374151;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.625rem 1.25rem;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            background: #4b5563;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover:not(:disabled) {
+            background: #059669;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover:not(:disabled) {
+            background: #dc2626;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        
+        .table th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+        
+        .table tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.625rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 9999px;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .loading-spinner {
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #7f1d1d;
+        }
+        
+        .alert-info {
+            background: #dbeafe;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 1rem;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+        }
+        
+        .modal-close:hover {
+            background: #f3f4f6;
+        }
+        
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 6px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f9fafb;
+        }
+        
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .upload-area.dragover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .image-preview {
+            max-width: 200px;
+            max-height: 150px;
+            object-fit: contain;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.625rem;
+            background: #e5e7eb;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            margin-right: 0.375rem;
+            margin-bottom: 0.375rem;
+        }
+        
+        .chip-remove {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .chip-remove:hover {
+            color: #ef4444;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+        
+        .empty-state svg {
+            color: #9ca3af;
+            margin-bottom: 1rem;
+        }
+        
+        .tab-container {
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.25rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+        }
+        
+        .tab:hover {
+            color: #4b5563;
+        }
+        
+        .tab.active {
+            color: #1d4ed8;
+            border-bottom-color: #1d4ed8;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .question-option {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+        
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f3f4f6;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #374151;
+            flex-shrink: 0;
+        }
+        
+        .option-input {
+            flex: 1;
+        }
+        
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .radio-label:hover {
+            background: #f3f4f6;
+        }
+        
+        .radio-input {
+            margin: 0;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                display: none;
+            }
+            
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-header {
+                padding: 1rem;
+            }
+            
+            .admin-content {
+                padding: 1rem;
+            }
+            
+            .table-container {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body class="h-full">
+    <div id="app" class="admin-container">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+            <div class="text-center">
+                <div class="loading-spinner mx-auto" style="width: 32px; height: 32px;"></div>
+                <p class="mt-4 text-gray-600">Loading Admin Panel...</p>
+            </div>
+        </div>
+        
+        <!-- Auth Screen -->
+        <div id="auth-screen" class="fixed inset-0 bg-white z-40 flex items-center justify-center p-4 hidden">
+            <div class="w-full max-w-md">
+                <div class="text-center mb-8">
+                    <h1 class="conceptblitz-logo text-3xl inline-block">
+                        <span class="concept-text">Concept</span><span class="blitz-text">Blitz</span>
+                    </h1>
+                    <p class="text-gray-600 mt-2">Admin Panel</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body">
+                        <form id="auth-form">
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" id="admin-email" class="form-input" placeholder="admin@example.com" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Password</label>
+                                <input type="password" id="admin-password" class="form-input" placeholder="••••••••" required>
+                            </div>
+                            
+                            <div id="auth-error" class="alert alert-error hidden"></div>
+                            
+                            <button type="submit" id="auth-button" class="btn btn-primary w-full">
+                                <span id="auth-button-text">Sign In</span>
+                                <div id="auth-button-spinner" class="loading-spinner hidden"></div>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main App -->
+        <div id="main-app" class="hidden">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="flex items-center gap-4">
+                    <h1 class="conceptblitz-logo text-xl">
+                        <span class="concept-text">Concept</span><span class="blitz-text">Blitz</span>
+                        <span class="text-sm font-normal text-gray-600">Admin</span>
+                    </h1>
+                    
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                            <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
+                        </svg>
+                        <span id="user-email"></span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <button id="logout-button" class="btn btn-secondary">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                            <path fill-rule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm5.03 4.72a.75.75 0 010 1.06l-1.72 1.72h10.94a.75.75 0 010 1.5H10.81l1.72 1.72a.75.75 0 11-1.06 1.06l-3-3a.75.75 0 010-1.06l3-3a.75.75 0 011.06 0z" clip-rule="evenodd" />
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="admin-main">
+                <!-- Sidebar -->
+                <nav class="admin-sidebar">
+                    <div class="space-y-1">
+                        <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M2.25 2.25a.75.75 0 000 1.5H3v10.5a3 3 0 003 3h1.21l-1.172 3.513a.75.75 0 001.424.474l.329-.987h8.418l.33.987a.75.75 0 001.422-.474l-1.17-3.513H18a3 3 0 003-3V3.75h.75a.75.75 0 000-1.5H2.25zm6.04 16.5l.5-1.5h6.42l.5 1.5H8.29zm7.46-12a.75.75 0 00-1.5 0v6a.75.75 0 001.5 0v-6zm-3 2.25a.75.75 0 00-1.5 0v3.75a.75.75 0 001.5 0V9zm-3 2.25a.75.75 0 00-1.5 0v1.5a.75.75 0 001.5 0v-1.5z" clip-rule="evenodd" />
+                            </svg>
+                            Dashboard
+                        </a>
+                        
+                        <a href="#courses" class="nav-item" data-section="courses">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.25 4.533A9.707 9.707 0 006 3a9.735 9.735 0 00-3.25.555.75.75 0 00-.5.707v14.25a.75.75 0 001 .707A8.237 8.237 0 016 18.75c1.995 0 3.823.707 5.25 1.886V4.533zM12.75 20.636A8.214 8.214 0 0118 18.75c.966 0 1.89.166 2.75.47a.75.75 0 001-.708V4.262a.75.75 0 00-.5-.707A9.735 9.735 0 0018 3a9.707 9.707 0 00-5.25 1.533v16.103z" />
+                            </svg>
+                            Courses
+                        </a>
+                        
+                        <a href="#subjects" class="nav-item" data-section="subjects">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625zM7.5 15a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 017.5 15zm.75 2.25a.75.75 0 000 1.5h7.5a.75.75 0 000-1.5h-7.5z" clip-rule="evenodd" />
+                                <path d="M12.971 1.816A5.23 5.23 0 0114.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 013.434 1.279 9.768 9.768 0 00-6.963-6.963z" />
+                            </svg>
+                            Subjects
+                        </a>
+                        
+                        <a href="#chapters" class="nav-item" data-section="chapters">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.625 1.5H9a3.75 3.75 0 013.75 3.75v1.875c0 1.036.84 1.875 1.875 1.875H16.5a3.75 3.75 0 013.75 3.75v7.875c0 1.035-.84 1.875-1.875 1.875H5.625a1.875 1.875 0 01-1.875-1.875V3.375c0-1.036.84-1.875 1.875-1.875zm6.905 9.97a.75.75 0 00-1.06 0l-3 3a.75.75 0 101.06 1.06l1.72-1.72V18a.75.75 0 001.5 0v-4.19l1.72 1.72a.75.75 0 101.06-1.06l-3-3z" clip-rule="evenodd" />
+                                <path d="M14.25 5.25a5.23 5.23 0 00-1.279-3.434 9.768 9.768 0 016.963 6.963A5.23 5.23 0 0016.5 7.5h-1.875a.375.375 0 01-.375-.375V5.25z" />
+                            </svg>
+                            Chapters
+                        </a>
+                        
+                        <a href="#lectures" class="nav-item" data-section="lectures">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" />
+                            </svg>
+                            Lectures
+                        </a>
+                        
+                        <a href="#notes" class="nav-item" data-section="notes">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.125 3C3.089 3 2.25 3.84 2.25 4.875V18a3 3 0 003 3h15a3 3 0 01-3-3V4.875C17.25 3.839 16.41 3 15.375 3H4.125zM12 9.75a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5H12zm-.75-2.25a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75zM6 12.75a.75.75 0 000 1.5h7.5a.75.75 0 000-1.5H6zm0 3a.75.75 0 000 1.5h7.5a.75.75 0 000-1.5H6z" clip-rule="evenodd" />
+                                <path d="M18.75 6.75h1.875c.621 0 1.125.504 1.125 1.125V18a1.5 1.5 0 01-3 0V6.75z" />
+                            </svg>
+                            Notes
+                        </a>
+                        
+                        <a href="#questions" class="nav-item" data-section="questions">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm11.378-3.917c-.89-.777-2.366-.777-3.255 0a.75.75 0 01-.988-1.129c1.454-1.272 3.776-1.272 5.23 0 1.513 1.324 1.513 3.518 0 4.842a3.75 3.75 0 01-.837.552c-.676.328-1.028.774-1.028 1.152v.75a.75.75 0 01-1.5 0v-.75c0-1.279 1.06-2.107 1.875-2.502.182-.088.351-.199.503-.331.83-.727.83-1.857 0-2.584zM12 18a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                            </svg>
+                            Practice Questions
+                        </a>
+                        
+                        <a href="#permissions" class="nav-item" data-section="permissions">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd" />
+                            </svg>
+                            Permissions
+                        </a>
+                    </div>
+                </nav>
+                
+                <!-- Content Area -->
+                <div class="admin-content">
+                    <!-- Dashboard -->
+                    <div id="dashboard-section" class="section active">
+                        <div class="grid grid-2">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2 class="card-title">Quick Stats</h2>
+                                </div>
+                                <div class="card-body">
+                                    <div class="grid grid-2">
+                                        <div class="text-center p-4">
+                                            <div class="text-2xl font-bold text-blue-600" id="courses-count">0</div>
+                                            <div class="text-sm text-gray-600">Courses</div>
+                                        </div>
+                                        <div class="text-center p-4">
+                                            <div class="text-2xl font-bold text-green-600" id="subjects-count">0</div>
+                                            <div class="text-sm text-gray-600">Subjects</div>
+                                        </div>
+                                        <div class="text-center p-4">
+                                            <div class="text-2xl font-bold text-yellow-600" id="chapters-count">0</div>
+                                            <div class="text-sm text-gray-600">Chapters</div>
+                                        </div>
+                                        <div class="text-center p-4">
+                                            <div class="text-2xl font-bold text-purple-600" id="lectures-count">0</div>
+                                            <div class="text-sm text-gray-600">Lectures</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <h2 class="card-title">Recent Activity</h2>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recent-activity" class="space-y-3">
+                                        <div class="text-sm text-gray-500 text-center p-4">
+                                            No recent activity
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Quick Actions</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="grid grid-2 gap-4">
+                                    <button id="quick-add-course" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                            <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                                        </svg>
+                                        Add New Course
+                                    </button>
+                                    
+                                    <button id="quick-add-subject" class="btn btn-success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                            <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                                        </svg>
+                                        Add New Subject
+                                    </button>
+                                    
+                                    <button id="quick-add-chapter" class="btn btn-secondary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                            <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                                        </svg>
+                                        Add New Chapter
+                                    </button>
+                                    
+                                    <button id="quick-add-question" class="btn btn-danger">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                            <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                                        </svg>
+                                        Add Practice Question
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Courses Section -->
+                    <div id="courses-section" class="section hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold">Courses Management</h2>
+                            <button id="add-course-btn" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                                </svg>
+                                Add Course
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">All Courses</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="table" id="courses-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Description</th>
+                                                <th>Subjects</th>
+                                                <th>Created</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="courses-list">
+                                            <tr>
+                                                <td colspan="5" class="text-center py-8 text-gray-500">
+                                                    Loading courses...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Subjects Section -->
+                    <div id="subjects-section" class="section hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold">Subjects Management</h2>
+                            <button id="add-subject-btn" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                                </svg>
+                                Add Subject
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="flex justify-between items-center">
+                                    <h2 class="card-title">All Subjects</h2>
+                                    <div class="flex items-center gap-2">
+                                        <select id="course-filter" class="form-input" style="width: auto;">
+                                            <option value="">All Courses</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="table" id="subjects-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Description</th>
+                                                <th>Course</th>
+                                                <th>Chapters</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="subjects-list">
+                                            <tr>
+                                                <td colspan="5" class="text-center py-8 text-gray-500">
+                                                    Loading subjects...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chapters Section -->
+                    <div id="chapters-section" class="section hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold">Chapters Management</h2>
+                            <button id="add-chapter-btn" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                                </svg>
+                                Add Chapter
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="flex justify-between items-center">
+                                    <h2 class="card-title">All Chapters</h2>
+                                    <div class="flex items-center gap-2">
+                                        <select id="subject-filter" class="form-input" style="width: auto;">
+                                            <option value="">All Subjects</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="table" id="chapters-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Description</th>
+                                                <th>Subject</th>
+                                                <th>Order</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="chapters-list">
+                                            <tr>
+                                                <td colspan="5" class="text-center py-8 text-gray-500">
+                                                    Loading chapters...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lectures Section -->
+                    <div id="lectures-section" class="section hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold">Lectures Management</h2>
+                            <button id="add-lecture-btn" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                                </svg>
+                                Add Lecture
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="flex justify-between items-center">
+                                    <h2 class="card-title">All Lectures</h2>
+                                    <div class="flex items-center gap-2">
+                                        <select id="chapter-lecture-filter" class="form-input" style="width: auto;">
+                                            <option value="">All Chapters</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="table" id="lectures-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Video Embed</th>
+                                                <th>Chapter</th>
+                                                <th>Order</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="lectures-list">
+                                            <tr>
+                                                <td colspan="5" class="text-center py-8 text-gray-500">
+                                                    Loading lectures...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notes Section -->
+                    <div id="notes-section" class="section hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold">Notes Management</h2>
+                            <button id="add-notes-btn" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                                </svg>
+                                Add Notes
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="flex justify-between items-center">
+                                    <h2 class="card-title">All Notes</h2>
+                                    <div class="flex items-center gap-2">
+                                        <select id="chapter-notes-filter" class="form-input" style="width: auto;">
+                                            <option value="">All Chapters</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="table" id="notes-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Chapter</th>
+                                                <th>Images</th>
+                                                <th>Created</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="notes-list">
+                                            <tr>
+                                                <td colspan="4" class="text-center py-8 text-gray-500">
+                                                    Loading notes...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Practice Questions Section -->
+                    <div id="questions-section" class="section hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold">Practice Questions Management</h2>
+                            <button id="add-question-btn" class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+                                </svg>
+                                Add Question
+                            </button>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="flex justify-between items-center">
+                                    <h2 class="card-title">All Questions</h2>
+                                    <div class="flex items-center gap-2">
+                                        <select id="chapter-question-filter" class="form-input" style="width: auto;">
+                                            <option value="">All Chapters</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="table" id="questions-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Question</th>
+                                                <th>Chapter</th>
+                                                <th>Options</th>
+                                                <th>Order</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="questions-list">
+                                            <tr>
+                                                <td colspan="5" class="text-center py-8 text-gray-500">
+                                                    Loading questions...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Permissions Section -->
+                    <div id="permissions-section" class="section hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold">User Permissions</h2>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Grant Access to Subjects</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="grid grid-2 gap-4 mb-6">
+                                    <div class="form-group">
+                                        <label class="form-label">User Email</label>
+                                        <input type="email" id="permission-email" class="form-input" placeholder="user@example.com">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">Subject</label>
+                                        <select id="permission-subject" class="form-input">
+                                            <option value="">Select a subject</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <button id="grant-permission-btn" class="btn btn-success">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                        <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clip-rule="evenodd" />
+                                    </svg>
+                                    Grant Access
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">All Permissions</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="table" id="permissions-table">
+                                        <thead>
+                                            <tr>
+                                                <th>User Email</th>
+                                                <th>Subject</th>
+                                                <th>Course</th>
+                                                <th>Granted On</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="permissions-list">
+                                            <tr>
+                                                <td colspan="5" class="text-center py-8 text-gray-500">
+                                                    Loading permissions...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- Course Modal -->
+        <div id="course-modal" class="modal-overlay hidden">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="course-modal-title">Add New Course</h3>
+                    <button class="modal-close" id="course-modal-close">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="course-form">
+                        <input type="hidden" id="course-id">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Course Title *</label>
+                            <input type="text" id="course-title" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea id="course-description" class="form-input form-textarea"></textarea>
+                        </div>
+                        
+                        <div id="course-form-error" class="alert alert-error hidden mb-4"></div>
+                        
+                        <div class="flex gap-2">
+                            <button type="submit" id="course-save-btn" class="btn btn-primary flex-1">
+                                <span id="course-save-text">Save Course</span>
+                                <div id="course-save-spinner" class="loading-spinner hidden"></div>
+                            </button>
+                            <button type="button" id="course-cancel-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Subject Modal -->
+        <div id="subject-modal" class="modal-overlay hidden">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="subject-modal-title">Add New Subject</h3>
+                    <button class="modal-close" id="subject-modal-close">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="subject-form">
+                        <input type="hidden" id="subject-id">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Course *</label>
+                            <select id="subject-course" class="form-input" required>
+                                <option value="">Select a course</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Subject Title *</label>
+                            <input type="text" id="subject-title" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea id="subject-description" class="form-input form-textarea"></textarea>
+                        </div>
+                        
+                        <div id="subject-form-error" class="alert alert-error hidden mb-4"></div>
+                        
+                        <div class="flex gap-2">
+                            <button type="submit" id="subject-save-btn" class="btn btn-primary flex-1">
+                                <span id="subject-save-text">Save Subject</span>
+                                <div id="subject-save-spinner" class="loading-spinner hidden"></div>
+                            </button>
+                            <button type="button" id="subject-cancel-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chapter Modal -->
+        <div id="chapter-modal" class="modal-overlay hidden">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="chapter-modal-title">Add New Chapter</h3>
+                    <button class="modal-close" id="chapter-modal-close">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="chapter-form">
+                        <input type="hidden" id="chapter-id">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Subject *</label>
+                            <select id="chapter-subject" class="form-input" required>
+                                <option value="">Select a subject</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Chapter Title *</label>
+                            <input type="text" id="chapter-title" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea id="chapter-description" class="form-input form-textarea"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Order *</label>
+                            <input type="number" id="chapter-order" class="form-input" required min="1" value="1">
+                            <p class="text-sm text-gray-500 mt-1">Lower numbers appear first</p>
+                        </div>
+                        
+                        <div id="chapter-form-error" class="alert alert-error hidden mb-4"></div>
+                        
+                        <div class="flex gap-2">
+                            <button type="submit" id="chapter-save-btn" class="btn btn-primary flex-1">
+                                <span id="chapter-save-text">Save Chapter</span>
+                                <div id="chapter-save-spinner" class="loading-spinner hidden"></div>
+                            </button>
+                            <button type="button" id="chapter-cancel-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lecture Modal -->
+        <div id="lecture-modal" class="modal-overlay hidden">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="lecture-modal-title">Add New Lecture</h3>
+                    <button class="modal-close" id="lecture-modal-close">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="lecture-form">
+                        <input type="hidden" id="lecture-id">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Chapter *</label>
+                            <select id="lecture-chapter" class="form-input" required>
+                                <option value="">Select a chapter</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Lecture Title *</label>
+                            <input type="text" id="lecture-title" class="form-input" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Video Embed Code/URL *</label>
+                            <textarea id="lecture-video" class="form-input form-textarea" required placeholder="YouTube embed code or video URL"></textarea>
+                            <p class="text-sm text-gray-500 mt-1">Enter YouTube embed code (iframe src) or direct video URL</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Order *</label>
+                            <input type="number" id="lecture-order" class="form-input" required min="1" value="1">
+                        </div>
+                        
+                        <div id="lecture-form-error" class="alert alert-error hidden mb-4"></div>
+                        
+                        <div class="flex gap-2">
+                            <button type="submit" id="lecture-save-btn" class="btn btn-primary flex-1">
+                                <span id="lecture-save-text">Save Lecture</span>
+                                <div id="lecture-save-spinner" class="loading-spinner hidden"></div>
+                            </button>
+                            <button type="button" id="lecture-cancel-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notes Modal -->
+        <div id="notes-modal" class="modal-overlay hidden">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="notes-modal-title">Add Notes</h3>
+                    <button class="modal-close" id="notes-modal-close">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="notes-form">
+                        <input type="hidden" id="notes-id">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Chapter *</label>
+                            <select id="notes-chapter" class="form-input" required>
+                                <option value="">Select a chapter</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Notes Images</label>
+                            <div id="notes-upload-area" class="upload-area">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 mx-auto text-gray-400">
+                                    <path fill-rule="evenodd" d="M10.5 3.75a6 6 0 00-5.98 6.496A5.25 5.25 0 006.75 20.25H18a4.5 4.5 0 002.206-8.423 3.75 3.75 0 00-4.133-4.303A6.001 6.001 0 0010.5 3.75zm2.25 6a.75.75 0 00-1.5 0v4.94l-1.72-1.72a.75.75 0 00-1.06 1.06l3 3a.75.75 0 001.06 0l3-3a.75.75 0 10-1.06-1.06l-1.72 1.72V9.75z" clip-rule="evenodd" />
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-600">Drag & drop images or click to upload</p>
+                                <p class="text-xs text-gray-500 mt-1">Multiple images allowed</p>
+                                <input type="file" id="notes-file-input" class="hidden" accept="image/*" multiple>
+                            </div>
+                            
+                            <div id="notes-preview" class="mt-4 grid grid-cols-2 gap-2 hidden">
+                                <!-- Images will be previewed here -->
+                            </div>
+                            
+                            <div id="notes-images-list" class="mt-4">
+                                <!-- Existing images will be listed here -->
+                            </div>
+                        </div>
+                        
+                        <div id="notes-form-error" class="alert alert-error hidden mb-4"></div>
+                        
+                        <div class="flex gap-2">
+                            <button type="submit" id="notes-save-btn" class="btn btn-primary flex-1">
+                                <span id="notes-save-text">Save Notes</span>
+                                <div id="notes-save-spinner" class="loading-spinner hidden"></div>
+                            </button>
+                            <button type="button" id="notes-cancel-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Question Modal -->
+        <div id="question-modal" class="modal-overlay hidden">
+            <div class="modal" style="max-width: 700px;">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="question-modal-title">Add Practice Question</h3>
+                    <button class="modal-close" id="question-modal-close">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 011.06 0L12 10.94l5.47-5.47a.75.75 0 111.06 1.06L13.06 12l5.47 5.47a.75.75 0 11-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 01-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="question-form">
+                        <input type="hidden" id="question-id">
+                        
+                        <div class="form-group">
+                            <label class="form-label">Chapter *</label>
+                            <select id="question-chapter" class="form-input" required>
+                                <option value="">Select a chapter</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Question Text *</label>
+                            <textarea id="question-text" class="form-input form-textarea" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Question Image (Optional)</label>
+                            <div id="question-image-upload" class="upload-area">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 mx-auto text-gray-400">
+                                    <path fill-rule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clip-rule="evenodd" />
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-600">Click to upload question image</p>
+                                <input type="file" id="question-file-input" class="hidden" accept="image/*">
+                            </div>
+                            <div id="question-image-preview" class="mt-4 hidden">
+                                <img id="question-image-preview-img" class="image-preview" src="" alt="Question image preview">
+                                <button type="button" id="remove-question-image" class="btn btn-secondary btn-sm mt-2">Remove Image</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Options *</label>
+                            <div id="options-container">
+                                <div class="question-option">
+                                    <div class="option-letter">A</div>
+                                    <input type="text" class="form-input option-input" placeholder="Option A" data-index="0" required>
+                                    <label class="radio-label">
+                                        <input type="radio" name="correct-option" value="0" class="radio-input" required>
+                                        Correct
+                                    </label>
+                                </div>
+                                <div class="question-option">
+                                    <div class="option-letter">B</div>
+                                    <input type="text" class="form-input option-input" placeholder="Option B" data-index="1" required>
+                                    <label class="radio-label">
+                                        <input type="radio" name="correct-option" value="1" class="radio-input">
+                                        Correct
+                                    </label>
+                                </div>
+                                <div class="question-option">
+                                    <div class="option-letter">C</div>
+                                    <input type="text" class="form-input option-input" placeholder="Option C" data-index="2" required>
+                                    <label class="radio-label">
+                                        <input type="radio" name="correct-option" value="2" class="radio-input">
+                                        Correct
+                                    </label>
+                                </div>
+                                <div class="question-option">
+                                    <div class="option-letter">D</div>
+                                    <input type="text" class="form-input option-input" placeholder="Option D" data-index="3" required>
+                                    <label class="radio-label">
+                                        <input type="radio" name="correct-option" value="3" class="radio-input">
+                                        Correct
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Explanation *</label>
+                            <textarea id="question-explanation" class="form-input form-textarea" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Explanation Image (Optional)</label>
+                            <div id="explanation-image-upload" class="upload-area">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 mx-auto text-gray-400">
+                                    <path fill-rule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clip-rule="evenodd" />
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-600">Click to upload explanation image</p>
+                                <input type="file" id="explanation-file-input" class="hidden" accept="image/*">
+                            </div>
+                            <div id="explanation-image-preview" class="mt-4 hidden">
+                                <img id="explanation-image-preview-img" class="image-preview" src="" alt="Explanation image preview">
+                                <button type="button" id="remove-explanation-image" class="btn btn-secondary btn-sm mt-2">Remove Image</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Explanation Video URL (Optional)</label>
+                            <input type="url" id="question-video-url" class="form-input" placeholder="https://www.youtube.com/embed/...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Order *</label>
+                            <input type="number" id="question-order" class="form-input" required min="1" value="1">
+                        </div>
+                        
+                        <div id="question-form-error" class="alert alert-error hidden mb-4"></div>
+                        
+                        <div class="flex gap-2">
+                            <button type="submit" id="question-save-btn" class="btn btn-primary flex-1">
+                                <span id="question-save-text">Save Question</span>
+                                <div id="question-save-spinner" class="loading-spinner hidden"></div>
+                            </button>
+                            <button type="button" id="question-cancel-btn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Confirmation Modal -->
+        <div id="confirm-modal" class="modal-overlay hidden">
+            <div class="modal" style="max-width: 400px;">
+                <div class="modal-body">
+                    <div class="text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 mx-auto text-yellow-500">
+                            <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+                        </svg>
+                        <h3 class="text-lg font-semibold mt-4" id="confirm-title">Are you sure?</h3>
+                        <p class="text-gray-600 mt-2" id="confirm-message"></p>
+                    </div>
+                    
+                    <div class="flex gap-2 mt-6">
+                        <button id="confirm-yes" class="btn btn-danger flex-1">Yes, Delete</button>
+                        <button id="confirm-no" class="btn btn-secondary flex-1">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJ_G5o4otg7riemfJDMOcPoHoIVH7emsc",
+            authDomain: "geobazarr.firebaseapp.com",
+            databaseURL: "https://geobazarr-default-rtdb.firebaseio.com",
+            projectId: "geobazarr",
+            storageBucket: "geobazarr.firebasestorage.app",
+            messagingSenderId: "679949247383",
+            appId: "1:679949247383:web:036d4f32038422ebb89ad2"
+        };
+
+        // Initialize Firebase
+        let db, auth, storage;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            storage = firebase.storage();
+            console.log("Firebase initialized successfully");
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+        }
+
+        // App State
+        let currentUser = null;
+        let courses = [];
+        let subjects = [];
+        let chapters = [];
+        let currentSection = 'dashboard';
+        let currentModal = null;
+        let confirmCallback = null;
+
+        // DOM Elements
+        const loadingScreen = document.getElementById('loading-screen');
+        const authScreen = document.getElementById('auth-screen');
+        const mainApp = document.getElementById('main-app');
+        const sections = document.querySelectorAll('.section');
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        // Authentication Elements
+        const authForm = document.getElementById('auth-form');
+        const adminEmail = document.getElementById('admin-email');
+        const adminPassword = document.getElementById('admin-password');
+        const authButton = document.getElementById('auth-button');
+        const authButtonText = document.getElementById('auth-button-text');
+        const authButtonSpinner = document.getElementById('auth-button-spinner');
+        const authError = document.getElementById('auth-error');
+        const logoutButton = document.getElementById('logout-button');
+        const userEmail = document.getElementById('user-email');
+        
+        // Quick Action Buttons
+        const quickAddCourse = document.getElementById('quick-add-course');
+        const quickAddSubject = document.getElementById('quick-add-subject');
+        const quickAddChapter = document.getElementById('quick-add-chapter');
+        const quickAddQuestion = document.getElementById('quick-add-question');
+        
+        // Section Buttons
+        const addCourseBtn = document.getElementById('add-course-btn');
+        const addSubjectBtn = document.getElementById('add-subject-btn');
+        const addChapterBtn = document.getElementById('add-chapter-btn');
+        const addLectureBtn = document.getElementById('add-lecture-btn');
+        const addNotesBtn = document.getElementById('add-notes-btn');
+        const addQuestionBtn = document.getElementById('add-question-btn');
+        
+        // Filters
+        const courseFilter = document.getElementById('course-filter');
+        const subjectFilter = document.getElementById('subject-filter');
+        const chapterLectureFilter = document.getElementById('chapter-lecture-filter');
+        const chapterNotesFilter = document.getElementById('chapter-notes-filter');
+        const chapterQuestionFilter = document.getElementById('chapter-question-filter');
+        
+        // Permission Elements
+        const grantPermissionBtn = document.getElementById('grant-permission-btn');
+        const permissionEmail = document.getElementById('permission-email');
+        const permissionSubject = document.getElementById('permission-subject');
+        
+        // Dashboard Stats
+        const coursesCount = document.getElementById('courses-count');
+        const subjectsCount = document.getElementById('subjects-count');
+        const chaptersCount = document.getElementById('chapters-count');
+        const lecturesCount = document.getElementById('lectures-count');
+        const recentActivity = document.getElementById('recent-activity');
+        
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+        });
+        
+        function initializeApp() {
+            // Check if user is already logged in
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    userEmail.textContent = user.email;
+                    
+                    // Check if user is admin (you might want to add admin check in your user document)
+                    const isAdmin = await checkAdminStatus(user.uid);
+                    if (isAdmin) {
+                        showMainApp();
+                        loadData();
+                    } else {
+                        showAuthScreen("Access denied. Admin privileges required.");
+                        await auth.signOut();
+                    }
+                } else {
+                    showAuthScreen();
+                }
+            });
+            
+            // Setup event listeners
+            setupEventListeners();
+        }
+        
+        async function checkAdminStatus(userId) {
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    return userData.isAdmin === true;
+                }
+                return false;
+            } catch (error) {
+                console.error("Error checking admin status:", error);
+                return false;
+            }
+        }
+        
+        function showAuthScreen(message = null) {
+            loadingScreen.classList.add('hidden');
+            authScreen.classList.remove('hidden');
+            mainApp.classList.add('hidden');
+            
+            if (message) {
+                showError(authError, message);
+            } else {
+                hideError(authError);
+            }
+        }
+        
+        function showMainApp() {
+            loadingScreen.classList.add('hidden');
+            authScreen.classList.add('hidden');
+            mainApp.classList.remove('hidden');
+        }
+        
+        function setupEventListeners() {
+            // Navigation
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = item.getAttribute('data-section');
+                    switchSection(section);
+                });
+            });
+            
+            // Authentication
+            authForm.addEventListener('submit', handleAuth);
+            logoutButton.addEventListener('click', handleLogout);
+            
+            // Quick Actions
+            quickAddCourse.addEventListener('click', () => showCourseModal());
+            quickAddSubject.addEventListener('click', () => showSubjectModal());
+            quickAddChapter.addEventListener('click', () => showChapterModal());
+            quickAddQuestion.addEventListener('click', () => showQuestionModal());
+            
+            // Section Buttons
+            addCourseBtn.addEventListener('click', () => showCourseModal());
+            addSubjectBtn.addEventListener('click', () => showSubjectModal());
+            addChapterBtn.addEventListener('click', () => showChapterModal());
+            addLectureBtn.addEventListener('click', () => showLectureModal());
+            addNotesBtn.addEventListener('click', () => showNotesModal());
+            addQuestionBtn.addEventListener('click', () => showQuestionModal());
+            
+            // Filters
+            courseFilter.addEventListener('change', filterSubjects);
+            subjectFilter.addEventListener('change', filterChapters);
+            chapterLectureFilter.addEventListener('change', filterLectures);
+            chapterNotesFilter.addEventListener('change', filterNotes);
+            chapterQuestionFilter.addEventListener('change', filterQuestions);
+            
+            // Permission Grant
+            grantPermissionBtn.addEventListener('click', grantPermission);
+            
+            // Modal Close Buttons
+            setupModalCloseButtons();
+            
+            // Confirmation Modal
+            document.getElementById('confirm-yes').addEventListener('click', () => {
+                if (confirmCallback) {
+                    confirmCallback();
+                    confirmCallback = null;
+                }
+                hideModal('confirm-modal');
+            });
+            
+            document.getElementById('confirm-no').addEventListener('click', () => {
+                hideModal('confirm-modal');
+                confirmCallback = null;
+            });
+        }
+        
+        function setupModalCloseButtons() {
+            // Course Modal
+            document.getElementById('course-modal-close').addEventListener('click', () => hideModal('course-modal'));
+            document.getElementById('course-cancel-btn').addEventListener('click', () => hideModal('course-modal'));
+            
+            // Subject Modal
+            document.getElementById('subject-modal-close').addEventListener('click', () => hideModal('subject-modal'));
+            document.getElementById('subject-cancel-btn').addEventListener('click', () => hideModal('subject-modal'));
+            
+            // Chapter Modal
+            document.getElementById('chapter-modal-close').addEventListener('click', () => hideModal('chapter-modal'));
+            document.getElementById('chapter-cancel-btn').addEventListener('click', () => hideModal('chapter-modal'));
+            
+            // Lecture Modal
+            document.getElementById('lecture-modal-close').addEventListener('click', () => hideModal('lecture-modal'));
+            document.getElementById('lecture-cancel-btn').addEventListener('click', () => hideModal('lecture-modal'));
+            
+            // Notes Modal
+            document.getElementById('notes-modal-close').addEventListener('click', () => hideModal('notes-modal'));
+            document.getElementById('notes-cancel-btn').addEventListener('click', () => hideModal('notes-modal'));
+            
+            // Question Modal
+            document.getElementById('question-modal-close').addEventListener('click', () => hideModal('question-modal'));
+            document.getElementById('question-cancel-btn').addEventListener('click', () => hideModal('question-modal'));
+            
+            // Modal Forms
+            document.getElementById('course-form').addEventListener('submit', handleCourseSave);
+            document.getElementById('subject-form').addEventListener('submit', handleSubjectSave);
+            document.getElementById('chapter-form').addEventListener('submit', handleChapterSave);
+            document.getElementById('lecture-form').addEventListener('submit', handleLectureSave);
+            document.getElementById('notes-form').addEventListener('submit', handleNotesSave);
+            document.getElementById('question-form').addEventListener('submit', handleQuestionSave);
+        }
+        
+        async function handleAuth(e) {
+            e.preventDefault();
+            
+            const email = adminEmail.value;
+            const password = adminPassword.value;
+            
+            if (!email || !password) {
+                showError(authError, "Please enter email and password");
+                return;
+            }
+            
+            setLoading(authButton, true);
+            hideError(authError);
+            
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                showError(authError, getAuthErrorMessage(error));
+                setLoading(authButton, false);
+            }
+        }
+        
+        async function handleLogout() {
+            try {
+                await auth.signOut();
+                showAuthScreen();
+            } catch (error) {
+                console.error("Logout error:", error);
+            }
+        }
+        
+        function switchSection(section) {
+            // Update active nav item
+            navItems.forEach(item => {
+                if (item.getAttribute('data-section') === section) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Show selected section
+            sections.forEach(sec => {
+                if (sec.id === `${section}-section`) {
+                    sec.classList.remove('hidden');
+                    sec.classList.add('active');
+                } else {
+                    sec.classList.add('hidden');
+                    sec.classList.remove('active');
+                }
+            });
+            
+            currentSection = section;
+            
+            // Load section-specific data
+            switch (section) {
+                case 'dashboard':
+                    updateDashboardStats();
+                    break;
+                case 'courses':
+                    loadCourses();
+                    break;
+                case 'subjects':
+                    loadSubjects();
+                    loadCourseFilter();
+                    break;
+                case 'chapters':
+                    loadChapters();
+                    loadSubjectFilter();
+                    break;
+                case 'lectures':
+                    loadLectures();
+                    loadChapterFilter('lecture');
+                    break;
+                case 'notes':
+                    loadNotes();
+                    loadChapterFilter('notes');
+                    break;
+                case 'questions':
+                    loadQuestions();
+                    loadChapterFilter('question');
+                    break;
+                case 'permissions':
+                    loadPermissions();
+                    loadPermissionSubjects();
+                    break;
+            }
+        }
+        
+        async function loadData() {
+            await loadCourses();
+            await loadSubjects();
+            await loadChapters();
+            updateDashboardStats();
+        }
+        
+        async function loadCourses() {
+            try {
+                const snapshot = await db.collection('courses').get();
+                courses = [];
+                snapshot.forEach(doc => {
+                    courses.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+                
+                renderCourses();
+            } catch (error) {
+                console.error("Error loading courses:", error);
+                showAlert('Error loading courses. Please refresh the page.', 'error');
+            }
+        }
+        
+        function renderCourses() {
+            const tbody = document.getElementById('courses-list');
+            
+            if (courses.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            No courses found. <button class="text-blue-600 hover:text-blue-800" id="add-first-course">Add your first course</button>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('add-first-course')?.addEventListener('click', () => showCourseModal());
+                return;
+            }
+            
+            tbody.innerHTML = courses.map(course => `
+                <tr>
+                    <td class="font-medium">${course.title || 'Untitled'}</td>
+                    <td class="max-w-xs truncate">${course.description || 'No description'}</td>
+                    <td>
+                        <span class="badge badge-success">${course.subjectCount || 0} subjects</span>
+                    </td>
+                    <td class="text-sm text-gray-500">${formatDate(course.createdAt)}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary btn-sm edit-course" data-id="${course.id}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" />
+                                    <path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" />
+                                </svg>
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-course" data-id="${course.id}" data-title="${course.title}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452zm-.355 5.945a.75.75 0 10-1.5.058l.347 9a.75.75 0 101.499-.058l-.346-9zm5.48.058a.75.75 0 10-1.498-.058l-.347 9a.75.75 0 001.5.058l.345-9z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // Add event listeners
+            document.querySelectorAll('.edit-course').forEach(btn => {
+                btn.addEventListener('click', () => editCourse(btn.dataset.id));
+            });
+            
+            document.querySelectorAll('.delete-course').forEach(btn => {
+                btn.addEventListener('click', () => confirmDelete('course', btn.dataset.id, btn.dataset.title));
+            });
+        }
+        
+        async function loadSubjects() {
+            try {
+                const snapshot = await db.collectionGroup('subjects').get();
+                subjects = [];
+                snapshot.forEach(doc => {
+                    subjects.push({
+                        id: doc.id,
+                        courseId: doc.ref.parent.parent.id,
+                        ...doc.data()
+                    });
+                });
+                
+                renderSubjects();
+            } catch (error) {
+                console.error("Error loading subjects:", error);
+                showAlert('Error loading subjects. Please refresh the page.', 'error');
+            }
+        }
+        
+        function renderSubjects() {
+            const tbody = document.getElementById('subjects-list');
+            
+            if (subjects.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            No subjects found. <button class="text-blue-600 hover:text-blue-800" id="add-first-subject">Add your first subject</button>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('add-first-subject')?.addEventListener('click', () => showSubjectModal());
+                return;
+            }
+            
+            tbody.innerHTML = subjects.map(subject => {
+                const course = courses.find(c => c.id === subject.courseId);
+                return `
+                <tr>
+                    <td class="font-medium">${subject.title || 'Untitled'}</td>
+                    <td class="max-w-xs truncate">${subject.description || 'No description'}</td>
+                    <td>${course ? course.title : 'Unknown Course'}</td>
+                    <td>
+                        <span class="badge badge-warning">${subject.chapterCount || 0} chapters</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary btn-sm edit-subject" data-id="${subject.id}" data-course="${subject.courseId}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" />
+                                    <path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" />
+                                </svg>
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-subject" data-id="${subject.id}" data-course="${subject.courseId}" data-title="${subject.title}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452zm-.355 5.945a.75.75 0 10-1.5.058l.347 9a.75.75 0 101.499-.058l-.346-9zm5.48.058a.75.75 0 10-1.498-.058l-.347 9a.75.75 0 001.5.058l.345-9z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+            
+            // Add event listeners
+            document.querySelectorAll('.edit-subject').forEach(btn => {
+                btn.addEventListener('click', () => editSubject(btn.dataset.id, btn.dataset.course));
+            });
+            
+            document.querySelectorAll('.delete-subject').forEach(btn => {
+                btn.addEventListener('click', () => confirmDelete('subject', btn.dataset.id, btn.dataset.title, btn.dataset.course));
+            });
+        }
+        
+        async function loadChapters() {
+            try {
+                chapters = [];
+                
+                // Load chapters from all subjects
+                for (const subject of subjects) {
+                    const snapshot = await db.collection('courses').doc(subject.courseId)
+                        .collection('subjects').doc(subject.id)
+                        .collection('chapters')
+                        .orderBy('order')
+                        .get();
+                    
+                    snapshot.forEach(doc => {
+                        chapters.push({
+                            id: doc.id,
+                            subjectId: subject.id,
+                            courseId: subject.courseId,
+                            subjectTitle: subject.title,
+                            ...doc.data()
+                        });
+                    });
+                }
+                
+                renderChapters();
+            } catch (error) {
+                console.error("Error loading chapters:", error);
+                showAlert('Error loading chapters. Please refresh the page.', 'error');
+            }
+        }
+        
+        function renderChapters() {
+            const tbody = document.getElementById('chapters-list');
+            
+            if (chapters.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            No chapters found. <button class="text-blue-600 hover:text-blue-800" id="add-first-chapter">Add your first chapter</button>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('add-first-chapter')?.addEventListener('click', () => showChapterModal());
+                return;
+            }
+            
+            tbody.innerHTML = chapters.map(chapter => `
+                <tr>
+                    <td class="font-medium">${chapter.title || 'Untitled'}</td>
+                    <td class="max-w-xs truncate">${chapter.description || 'No description'}</td>
+                    <td>${chapter.subjectTitle}</td>
+                    <td>${chapter.order}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary btn-sm edit-chapter" data-id="${chapter.id}" data-subject="${chapter.subjectId}" data-course="${chapter.courseId}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z" />
+                                    <path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z" />
+                                </svg>
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-chapter" data-id="${chapter.id}" data-subject="${chapter.subjectId}" data-course="${chapter.courseId}" data-title="${chapter.title}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                    <path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.07a3 3 0 01-2.991 2.77H8.084a3 3 0 01-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 013.369 0c1.603.051 2.815 1.387 2.815 2.951zm-6.136-1.452a51.196 51.196 0 013.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 00-6 0v-.113c0-.794.609-1.428 1.364-1.452zm-.355 5.945a.75.75 0 10-1.5.058l.347 9a.75.75 0 101.499-.058l-.346-9zm5.48.058a.75.75 0 10-1.498-.058l-.347 9a.75.75 0 001.5.058l.345-9z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // Add event listeners
+            document.querySelectorAll('.edit-chapter').forEach(btn => {
+                btn.addEventListener('click', () => editChapter(btn.dataset.id, btn.dataset.subject, btn.dataset.course));
+            });
+            
+            document.querySelectorAll('.delete-chapter').forEach(btn => {
+                btn.addEventListener('click', () => confirmDelete('chapter', btn.dataset.id, btn.dataset.title, btn.dataset.course, btn.dataset.subject));
+            });
+        }
+        
+        async function loadLectures() {
+            try {
+                const lecturesList = document.getElementById('lectures-list');
+                lecturesList.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            Loading lectures...
+                        </td>
+                    </tr>
+                `;
+                
+                const lectures = [];
+                
+                // Load lectures from all chapters
+                for (const chapter of chapters) {
+                    const snapshot = await db.collection('courses').doc(chapter.courseId)
+                        .collection('subjects').doc(chapter.subjectId)
+                        .collection('chapters').doc(chapter.id)
+                        .collection('lectures')
+                        .orderBy('order')
+                        .get();
+                    
+                    snapshot.forEach(doc => {
+                        lectures.push({
+                            id: doc.id,
+                            chapterId: chapter.id,
+                            subjectId: chapter.subjectId,
+                            courseId: chapter.courseId,
+                            chapterTitle: chapter.title,
+                            ...doc.data()
+                        });
+                    });
+                }
+                
+                renderLectures(lectures);
+            } catch (error) {
+                console.error("Error loading lectures:", error);
+                document.getElementById('lectures-list').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            Error loading lectures. Please try again.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function renderLectures(lectures) {
+            const tbody = document.getElementById('lectures-list');
+            
+            if (lectures.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            No lectures found. <button class="text-blue-600 hover:text-blue-800" id="add-first-lecture">Add your first lecture</button>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('add-first-lecture')?.addEventListener('click', () => showLectureModal());
+                return;
+            }
+            
+            tbody.innerHTML = lectures.map(lecture => `
+                <tr>
+                    <td class="font-medium">${lecture.title || 'Untitled'}</td>
+                    <td class="max-w-xs truncate text-sm">${lecture.videoEmbedCode?.substring(0, 50) || 'No video'}...</td>
+                    <td>${lecture.chapterTitle}</td>
+                    <td>${lecture.order}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary btn-sm edit-lecture" 
+                                    data-id="${lecture.id}" 
+                                    data-chapter="${lecture.chapterId}" 
+                                    data-subject="${lecture.subjectId}" 
+                                    data-course="${lecture.courseId}">
+                                Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-lecture" 
+                                    data-id="${lecture.id}" 
+                                    data-chapter="${lecture.chapterId}" 
+                                    data-subject="${lecture.subjectId}" 
+                                    data-course="${lecture.courseId}" 
+                                    data-title="${lecture.title}">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // Add event listeners
+            document.querySelectorAll('.edit-lecture').forEach(btn => {
+                btn.addEventListener('click', () => editLecture(btn.dataset));
+            });
+            
+            document.querySelectorAll('.delete-lecture').forEach(btn => {
+                btn.addEventListener('click', () => confirmDelete('lecture', btn.dataset.id, btn.dataset.title, btn.dataset.course, btn.dataset.subject, btn.dataset.chapter));
+            });
+        }
+        
+        async function loadNotes() {
+            try {
+                const notesList = document.getElementById('notes-list');
+                notesList.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-8 text-gray-500">
+                            Loading notes...
+                        </td>
+                    </tr>
+                `;
+                
+                const allNotes = [];
+                
+                // Load notes from all chapters
+                for (const chapter of chapters) {
+                    const snapshot = await db.collection('courses').doc(chapter.courseId)
+                        .collection('subjects').doc(chapter.subjectId)
+                        .collection('chapters').doc(chapter.id)
+                        .collection('notes')
+                        .get();
+                    
+                    snapshot.forEach(doc => {
+                        allNotes.push({
+                            id: doc.id,
+                            chapterId: chapter.id,
+                            subjectId: chapter.subjectId,
+                            courseId: chapter.courseId,
+                            chapterTitle: chapter.title,
+                            ...doc.data()
+                        });
+                    });
+                }
+                
+                renderNotes(allNotes);
+            } catch (error) {
+                console.error("Error loading notes:", error);
+                document.getElementById('notes-list').innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-8 text-gray-500">
+                            Error loading notes. Please try again.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function renderNotes(notes) {
+            const tbody = document.getElementById('notes-list');
+            
+            if (notes.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-8 text-gray-500">
+                            No notes found. <button class="text-blue-600 hover:text-blue-800" id="add-first-notes">Add your first notes</button>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('add-first-notes')?.addEventListener('click', () => showNotesModal());
+                return;
+            }
+            
+            tbody.innerHTML = notes.map(note => {
+                const imageCount = (note.imageUrls && note.imageUrls.length) || (note.imageUrl ? 1 : 0);
+                return `
+                <tr>
+                    <td class="font-medium">${note.chapterTitle}</td>
+                    <td>
+                        <span class="badge badge-success">${imageCount} images</span>
+                    </td>
+                    <td class="text-sm text-gray-500">${formatDate(note.createdAt)}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary btn-sm edit-notes" 
+                                    data-id="${note.id}" 
+                                    data-chapter="${note.chapterId}" 
+                                    data-subject="${note.subjectId}" 
+                                    data-course="${note.courseId}">
+                                Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-notes" 
+                                    data-id="${note.id}" 
+                                    data-chapter="${note.chapterId}" 
+                                    data-subject="${note.subjectId}" 
+                                    data-course="${note.courseId}">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+            
+            // Add event listeners
+            document.querySelectorAll('.edit-notes').forEach(btn => {
+                btn.addEventListener('click', () => editNotes(btn.dataset));
+            });
+            
+            document.querySelectorAll('.delete-notes').forEach(btn => {
+                btn.addEventListener('click', () => confirmDelete('notes', btn.dataset.id, 'Notes', btn.dataset.course, btn.dataset.subject, btn.dataset.chapter));
+            });
+        }
+        
+        async function loadQuestions() {
+            try {
+                const questionsList = document.getElementById('questions-list');
+                questionsList.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            Loading questions...
+                        </td>
+                    </tr>
+                `;
+                
+                const allQuestions = [];
+                
+                // Load questions from all chapters
+                for (const chapter of chapters) {
+                    const snapshot = await db.collection('courses').doc(chapter.courseId)
+                        .collection('subjects').doc(chapter.subjectId)
+                        .collection('chapters').doc(chapter.id)
+                        .collection('questions')
+                        .orderBy('order')
+                        .get();
+                    
+                    snapshot.forEach(doc => {
+                        allQuestions.push({
+                            id: doc.id,
+                            chapterId: chapter.id,
+                            subjectId: chapter.subjectId,
+                            courseId: chapter.courseId,
+                            chapterTitle: chapter.title,
+                            ...doc.data()
+                        });
+                    });
+                }
+                
+                renderQuestions(allQuestions);
+            } catch (error) {
+                console.error("Error loading questions:", error);
+                document.getElementById('questions-list').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            Error loading questions. Please try again.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function renderQuestions(questions) {
+            const tbody = document.getElementById('questions-list');
+            
+            if (questions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            No questions found. <button class="text-blue-600 hover:text-blue-800" id="add-first-question">Add your first question</button>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('add-first-question')?.addEventListener('click', () => showQuestionModal());
+                return;
+            }
+            
+            tbody.innerHTML = questions.map(q => `
+                <tr>
+                    <td class="max-w-xs truncate">${q.question?.substring(0, 100) || 'No question'}...</td>
+                    <td>${q.chapterTitle}</td>
+                    <td>${q.options ? q.options.length : 0} options</td>
+                    <td>${q.order}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary btn-sm edit-question" 
+                                    data-id="${q.id}" 
+                                    data-chapter="${q.chapterId}" 
+                                    data-subject="${q.subjectId}" 
+                                    data-course="${q.courseId}">
+                                Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-question" 
+                                    data-id="${q.id}" 
+                                    data-chapter="${q.chapterId}" 
+                                    data-subject="${q.subjectId}" 
+                                    data-course="${q.courseId}">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // Add event listeners
+            document.querySelectorAll('.edit-question').forEach(btn => {
+                btn.addEventListener('click', () => editQuestion(btn.dataset));
+            });
+            
+            document.querySelectorAll('.delete-question').forEach(btn => {
+                btn.addEventListener('click', () => confirmDelete('question', btn.dataset.id, 'Question', btn.dataset.course, btn.dataset.subject, btn.dataset.chapter));
+            });
+        }
+        
+        async function loadPermissions() {
+            try {
+                const permissionsList = document.getElementById('permissions-list');
+                permissionsList.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            Loading permissions...
+                        </td>
+                    </tr>
+                `;
+                
+                const allPermissions = [];
+                
+                // Load permissions from all subjects
+                for (const subject of subjects) {
+                    const snapshot = await db.collection('courses').doc(subject.courseId)
+                        .collection('subjects').doc(subject.id)
+                        .collection('permissions')
+                        .get();
+                    
+                    snapshot.forEach(doc => {
+                        allPermissions.push({
+                            id: doc.id,
+                            subjectId: subject.id,
+                            courseId: subject.courseId,
+                            subjectTitle: subject.title,
+                            courseTitle: courses.find(c => c.id === subject.courseId)?.title || 'Unknown',
+                            ...doc.data()
+                        });
+                    });
+                }
+                
+                renderPermissions(allPermissions);
+            } catch (error) {
+                console.error("Error loading permissions:", error);
+                document.getElementById('permissions-list').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            Error loading permissions. Please try again.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function renderPermissions(permissions) {
+            const tbody = document.getElementById('permissions-list');
+            
+            if (permissions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">
+                            No permissions granted yet.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = permissions.map(perm => `
+                <tr>
+                    <td class="font-medium">${perm.userEmail || perm.userId}</td>
+                    <td>${perm.subjectTitle}</td>
+                    <td>${perm.courseTitle}</td>
+                    <td class="text-sm text-gray-500">${formatDate(perm.grantedAt)}</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm revoke-permission" 
+                                data-id="${perm.id}" 
+                                data-subject="${perm.subjectId}" 
+                                data-course="${perm.courseId}"
+                                data-email="${perm.userEmail || perm.userId}">
+                            Revoke
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            // Add event listeners
+            document.querySelectorAll('.revoke-permission').forEach(btn => {
+                btn.addEventListener('click', () => revokePermission(btn.dataset));
+            });
+        }
+        
+        function loadCourseFilter() {
+            const select = document.getElementById('course-filter');
+            select.innerHTML = '<option value="">All Courses</option>';
+            courses.forEach(course => {
+                select.innerHTML += `<option value="${course.id}">${course.title}</option>`;
+            });
+        }
+        
+        function loadSubjectFilter() {
+            const select = document.getElementById('subject-filter');
+            select.innerHTML = '<option value="">All Subjects</option>';
+            subjects.forEach(subject => {
+                const course = courses.find(c => c.id === subject.courseId);
+                select.innerHTML += `<option value="${subject.id}">${subject.title} (${course ? course.title : 'Unknown'})</option>`;
+            });
+        }
+        
+        function loadChapterFilter(type) {
+            const selectId = type === 'lecture' ? 'chapter-lecture-filter' : 
+                           type === 'notes' ? 'chapter-notes-filter' : 'chapter-question-filter';
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">All Chapters</option>';
+            chapters.forEach(chapter => {
+                select.innerHTML += `<option value="${chapter.id}">${chapter.title} (${chapter.subjectTitle})</option>`;
+            });
+        }
+        
+        function loadPermissionSubjects() {
+            const select = document.getElementById('permission-subject');
+            select.innerHTML = '<option value="">Select a subject</option>';
+            subjects.forEach(subject => {
+                const course = courses.find(c => c.id === subject.courseId);
+                select.innerHTML += `<option value="${subject.id}">${subject.title} (${course ? course.title : 'Unknown'})</option>`;
+            });
+        }
+        
+        function filterSubjects() {
+            const courseId = courseFilter.value;
+            const rows = document.querySelectorAll('#subjects-table tbody tr');
+            
+            rows.forEach(row => {
+                if (!courseId) {
+                    row.style.display = '';
+                    return;
+                }
+                
+                const courseCell = row.querySelector('td:nth-child(3)');
+                const courseName = courseCell.textContent;
+                const matchingCourse = courses.find(c => c.id === courseId);
+                
+                if (matchingCourse && courseName === matchingCourse.title) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function filterChapters() {
+            const subjectId = subjectFilter.value;
+            const rows = document.querySelectorAll('#chapters-table tbody tr');
+            
+            rows.forEach(row => {
+                if (!subjectId) {
+                    row.style.display = '';
+                    return;
+                }
+                
+                const editBtn = row.querySelector('.edit-chapter');
+                if (editBtn && editBtn.dataset.subject === subjectId) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function filterLectures() {
+            const chapterId = chapterLectureFilter.value;
+            const rows = document.querySelectorAll('#lectures-table tbody tr');
+            
+            rows.forEach(row => {
+                if (!chapterId) {
+                    row.style.display = '';
+                    return;
+                }
+                
+                const editBtn = row.querySelector('.edit-lecture');
+                if (editBtn && editBtn.dataset.chapter === chapterId) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function filterNotes() {
+            const chapterId = chapterNotesFilter.value;
+            const rows = document.querySelectorAll('#notes-table tbody tr');
+            
+            rows.forEach(row => {
+                if (!chapterId) {
+                    row.style.display = '';
+                    return;
+                }
+                
+                const editBtn = row.querySelector('.edit-notes');
+                if (editBtn && editBtn.dataset.chapter === chapterId) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function filterQuestions() {
+            const chapterId = chapterQuestionFilter.value;
+            const rows = document.querySelectorAll('#questions-table tbody tr');
+            
+            rows.forEach(row => {
+                if (!chapterId) {
+                    row.style.display = '';
+                    return;
+                }
+                
+                const editBtn = row.querySelector('.edit-question');
+                if (editBtn && editBtn.dataset.chapter === chapterId) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function updateDashboardStats() {
+            coursesCount.textContent = courses.length;
+            subjectsCount.textContent = subjects.length;
+            chaptersCount.textContent = chapters.length;
+            
+            // Count lectures
+            let lectureCount = 0;
+            chapters.forEach(async chapter => {
+                const snapshot = await db.collection('courses').doc(chapter.courseId)
+                    .collection('subjects').doc(chapter.subjectId)
+                    .collection('chapters').doc(chapter.id)
+                    .collection('lectures')
+                    .get();
+                lectureCount += snapshot.size;
+                lecturesCount.textContent = lectureCount;
+            });
+            
+            // Recent activity
+            const activity = [];
+            if (courses.length > 0) {
+                const recentCourse = courses[courses.length - 1];
+                activity.push({
+                    type: 'course',
+                    title: recentCourse.title,
+                    time: 'Just now'
+                });
+            }
+            
+            if (activity.length === 0) {
+                recentActivity.innerHTML = `
+                    <div class="text-sm text-gray-500 text-center p-4">
+                        No recent activity
+                    </div>
+                `;
+            } else {
+                recentActivity.innerHTML = activity.map(a => `
+                    <div class="flex items-center gap-3">
+                        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <div class="flex-1">
+                            <div class="font-medium">${a.title}</div>
+                            <div class="text-xs text-gray-500">${a.time}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Modal Functions
+        function showCourseModal(editId = null) {
+            const modal = document.getElementById('course-modal');
+            const title = document.getElementById('course-modal-title');
+            const form = document.getElementById('course-form');
+            const idField = document.getElementById('course-id');
+            const nameField = document.getElementById('course-title');
+            const descField = document.getElementById('course-description');
+            
+            form.reset();
+            hideError(document.getElementById('course-form-error'));
+            
+            if (editId) {
+                const course = courses.find(c => c.id === editId);
+                if (course) {
+                    title.textContent = 'Edit Course';
+                    idField.value = course.id;
+                    nameField.value = course.title || '';
+                    descField.value = course.description || '';
+                }
+            } else {
+                title.textContent = 'Add New Course';
+                idField.value = '';
+            }
+            
+            showModal('course-modal');
+        }
+        
+        function showSubjectModal(editId = null, courseId = null) {
+            const modal = document.getElementById('subject-modal');
+            const title = document.getElementById('subject-modal-title');
+            const form = document.getElementById('subject-form');
+            const idField = document.getElementById('subject-id');
+            const courseField = document.getElementById('subject-course');
+            const nameField = document.getElementById('subject-title');
+            const descField = document.getElementById('subject-description');
+            
+            form.reset();
+            hideError(document.getElementById('subject-form-error'));
+            
+            // Populate course dropdown
+            courseField.innerHTML = '<option value="">Select a course</option>';
+            courses.forEach(course => {
+                courseField.innerHTML += `<option value="${course.id}">${course.title}</option>`;
+            });
+            
+            if (editId) {
+                const subject = subjects.find(s => s.id === editId);
+                if (subject) {
+                    title.textContent = 'Edit Subject';
+                    idField.value = subject.id;
+                    courseField.value = subject.courseId;
+                    nameField.value = subject.title || '';
+                    descField.value = subject.description || '';
+                }
+            } else {
+                title.textContent = 'Add New Subject';
+                idField.value = '';
+                if (courseId) {
+                    courseField.value = courseId;
+                }
+            }
+            
+            showModal('subject-modal');
+        }
+        
+        function showChapterModal(editId = null, subjectId = null, courseId = null) {
+            const modal = document.getElementById('chapter-modal');
+            const title = document.getElementById('chapter-modal-title');
+            const form = document.getElementById('chapter-form');
+            const idField = document.getElementById('chapter-id');
+            const subjectField = document.getElementById('chapter-subject');
+            const nameField = document.getElementById('chapter-title');
+            const descField = document.getElementById('chapter-description');
+            const orderField = document.getElementById('chapter-order');
+            
+            form.reset();
+            hideError(document.getElementById('chapter-form-error'));
+            
+            // Populate subject dropdown
+            subjectField.innerHTML = '<option value="">Select a subject</option>';
+            subjects.forEach(subject => {
+                const course = courses.find(c => c.id === subject.courseId);
+                subjectField.innerHTML += `<option value="${subject.id}" data-course="${subject.courseId}">${subject.title} (${course ? course.title : 'Unknown'})</option>`;
+            });
+            
+            if (editId) {
+                const chapter = chapters.find(c => c.id === editId);
+                if (chapter) {
+                    title.textContent = 'Edit Chapter';
+                    idField.value = chapter.id;
+                    subjectField.value = chapter.subjectId;
+                    nameField.value = chapter.title || '';
+                    descField.value = chapter.description || '';
+                    orderField.value = chapter.order || 1;
+                }
+            } else {
+                title.textContent = 'Add New Chapter';
+                idField.value = '';
+                orderField.value = 1;
+                if (subjectId) {
+                    subjectField.value = subjectId;
+                }
+            }
+            
+            showModal('chapter-modal');
+        }
+        
+        function showLectureModal(data = null) {
+            const modal = document.getElementById('lecture-modal');
+            const title = document.getElementById('lecture-modal-title');
+            const form = document.getElementById('lecture-form');
+            const idField = document.getElementById('lecture-id');
+            const chapterField = document.getElementById('lecture-chapter');
+            const nameField = document.getElementById('lecture-title');
+            const videoField = document.getElementById('lecture-video');
+            const orderField = document.getElementById('lecture-order');
+            
+            form.reset();
+            hideError(document.getElementById('lecture-form-error'));
+            
+            // Populate chapter dropdown
+            chapterField.innerHTML = '<option value="">Select a chapter</option>';
+            chapters.forEach(chapter => {
+                chapterField.innerHTML += `<option value="${chapter.id}">${chapter.title} (${chapter.subjectTitle})</option>`;
+            });
+            
+            if (data) {
+                // Load lecture data for editing
+                // Note: In a real app, you would fetch the lecture data
+                title.textContent = 'Edit Lecture';
+                // You would set the values here
+            } else {
+                title.textContent = 'Add New Lecture';
+                idField.value = '';
+                orderField.value = 1;
+            }
+            
+            showModal('lecture-modal');
+        }
+        
+        function showNotesModal(data = null) {
+            const modal = document.getElementById('notes-modal');
+            const title = document.getElementById('notes-modal-title');
+            const form = document.getElementById('notes-form');
+            const idField = document.getElementById('notes-id');
+            const chapterField = document.getElementById('notes-chapter');
+            const uploadArea = document.getElementById('notes-upload-area');
+            const fileInput = document.getElementById('notes-file-input');
+            const preview = document.getElementById('notes-preview');
+            const imagesList = document.getElementById('notes-images-list');
+            
+            form.reset();
+            hideError(document.getElementById('notes-form-error'));
+            preview.classList.add('hidden');
+            imagesList.innerHTML = '';
+            
+            // Populate chapter dropdown
+            chapterField.innerHTML = '<option value="">Select a chapter</option>';
+            chapters.forEach(chapter => {
+                chapterField.innerHTML += `<option value="${chapter.id}">${chapter.title} (${chapter.subjectTitle})</option>`;
+            });
+            
+            // Setup upload area
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleNotesFiles(e.dataTransfer.files);
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                handleNotesFiles(e.target.files);
+            });
+            
+            if (data) {
+                title.textContent = 'Edit Notes';
+                idField.value = data.id;
+                chapterField.value = data.chapter;
+                // Load existing images
+            } else {
+                title.textContent = 'Add Notes';
+                idField.value = '';
+            }
+            
+            showModal('notes-modal');
+        }
+        
+        function showQuestionModal(data = null) {
+            const modal = document.getElementById('question-modal');
+            const title = document.getElementById('question-modal-title');
+            const form = document.getElementById('question-form');
+            const idField = document.getElementById('question-id');
+            const chapterField = document.getElementById('question-chapter');
+            
+            form.reset();
+            hideError(document.getElementById('question-form-error'));
+            
+            // Populate chapter dropdown
+            chapterField.innerHTML = '<option value="">Select a chapter</option>';
+            chapters.forEach(chapter => {
+                chapterField.innerHTML += `<option value="${chapter.id}">${chapter.title} (${chapter.subjectTitle})</option>`;
+            });
+            
+            // Setup upload areas
+            setupQuestionUpload();
+            
+            if (data) {
+                title.textContent = 'Edit Question';
+                idField.value = data.id;
+                chapterField.value = data.chapter;
+                // Load existing data
+            } else {
+                title.textContent = 'Add Practice Question';
+                idField.value = '';
+            }
+            
+            showModal('question-modal');
+        }
+        
+        function setupQuestionUpload() {
+            // Question image upload
+            const questionUpload = document.getElementById('question-image-upload');
+            const questionFileInput = document.getElementById('question-file-input');
+            const questionPreview = document.getElementById('question-image-preview');
+            const questionPreviewImg = document.getElementById('question-image-preview-img');
+            const removeQuestionImage = document.getElementById('remove-question-image');
+            
+            questionUpload.addEventListener('click', () => questionFileInput.click());
+            questionFileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        questionPreviewImg.src = e.target.result;
+                        questionPreview.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            removeQuestionImage.addEventListener('click', () => {
+                questionPreview.classList.add('hidden');
+                questionPreviewImg.src = '';
+                questionFileInput.value = '';
+            });
+            
+            // Explanation image upload
+            const explanationUpload = document.getElementById('explanation-image-upload');
+            const explanationFileInput = document.getElementById('explanation-file-input');
+            const explanationPreview = document.getElementById('explanation-image-preview');
+            const explanationPreviewImg = document.getElementById('explanation-image-preview-img');
+            const removeExplanationImage = document.getElementById('remove-explanation-image');
+            
+            explanationUpload.addEventListener('click', () => explanationFileInput.click());
+            explanationFileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        explanationPreviewImg.src = e.target.result;
+                        explanationPreview.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            removeExplanationImage.addEventListener('click', () => {
+                explanationPreview.classList.add('hidden');
+                explanationPreviewImg.src = '';
+                explanationFileInput.value = '';
+            });
+        }
+        
+        function handleNotesFiles(files) {
+            const preview = document.getElementById('notes-preview');
+            preview.innerHTML = '';
+            
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-full h-32 object-cover rounded';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            if (files.length > 0) {
+                preview.classList.remove('hidden');
+            }
+        }
+        
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            currentModal = modalId;
+        }
+        
+        function hideModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('hidden');
+            currentModal = null;
+        }
+        
+        function confirmDelete(type, id, title, courseId = null, subjectId = null, chapterId = null) {
+            const modal = document.getElementById('confirm-modal');
+            const titleEl = document.getElementById('confirm-title');
+            const message = document.getElementById('confirm-message');
+            
+            let messageText = '';
+            
+            switch (type) {
+                case 'course':
+                    messageText = `Are you sure you want to delete the course "${title}"? This will also delete all subjects, chapters, lectures, notes, and questions within this course.`;
+                    confirmCallback = () => deleteCourse(id);
+                    break;
+                case 'subject':
+                    messageText = `Are you sure you want to delete the subject "${title}"? This will also delete all chapters, lectures, notes, and questions within this subject.`;
+                    confirmCallback = () => deleteSubject(id, courseId);
+                    break;
+                case 'chapter':
+                    messageText = `Are you sure you want to delete the chapter "${title}"? This will also delete all lectures, notes, and questions within this chapter.`;
+                    confirmCallback = () => deleteChapter(id, courseId, subjectId);
+                    break;
+                case 'lecture':
+                    messageText = `Are you sure you want to delete the lecture "${title}"?`;
+                    confirmCallback = () => deleteLecture(id, courseId, subjectId, chapterId);
+                    break;
+                case 'notes':
+                    messageText = `Are you sure you want to delete these notes?`;
+                    confirmCallback = () => deleteNotes(id, courseId, subjectId, chapterId);
+                    break;
+                case 'question':
+                    messageText = `Are you sure you want to delete this question?`;
+                    confirmCallback = () => deleteQuestion(id, courseId, subjectId, chapterId);
+                    break;
+            }
+            
+            titleEl.textContent = `Delete ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            message.textContent = messageText;
+            modal.classList.remove('hidden');
+        }
+        
+        // Form Handlers
+        async function handleCourseSave(e) {
+            e.preventDefault();
+            
+            const form = document.getElementById('course-form');
+            const id = document.getElementById('course-id').value;
+            const title = document.getElementById('course-title').value;
+            const description = document.getElementById('course-description').value;
+            const saveBtn = document.getElementById('course-save-btn');
+            const saveText = document.getElementById('course-save-text');
+            const saveSpinner = document.getElementById('course-save-spinner');
+            const errorDiv = document.getElementById('course-form-error');
+            
+            if (!title.trim()) {
+                showError(errorDiv, "Course title is required");
+                return;
+            }
+            
+            setLoading(saveBtn, true);
+            hideError(errorDiv);
+            
+            try {
+                const courseData = {
+                    title: title.trim(),
+                    description: description.trim(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                if (id) {
+                    // Update existing course
+                    await db.collection('courses').doc(id).update(courseData);
+                    showAlert('Course updated successfully!', 'success');
+                } else {
+                    // Create new course
+                    courseData.createdAt = new Date().toISOString();
+                    await db.collection('courses').add(courseData);
+                    showAlert('Course created successfully!', 'success');
+                }
+                
+                hideModal('course-modal');
+                await loadCourses();
+                await loadSubjects(); // Subjects might need reloading
+                await loadChapters(); // Chapters might need reloading
+                updateDashboardStats();
+                
+            } catch (error) {
+                console.error("Error saving course:", error);
+                showError(errorDiv, "Failed to save course. Please try again.");
+            } finally {
+                setLoading(saveBtn, false);
+            }
+        }
+        
+        async function handleSubjectSave(e) {
+            e.preventDefault();
+            
+            const form = document.getElementById('subject-form');
+            const id = document.getElementById('subject-id').value;
+            const courseId = document.getElementById('subject-course').value;
+            const title = document.getElementById('subject-title').value;
+            const description = document.getElementById('subject-description').value;
+            const saveBtn = document.getElementById('subject-save-btn');
+            const errorDiv = document.getElementById('subject-form-error');
+            
+            if (!courseId) {
+                showError(errorDiv, "Please select a course");
+                return;
+            }
+            
+            if (!title.trim()) {
+                showError(errorDiv, "Subject title is required");
+                return;
+            }
+            
+            setLoading(saveBtn, true);
+            hideError(errorDiv);
+            
+            try {
+                const subjectData = {
+                    title: title.trim(),
+                    description: description.trim(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                if (id) {
+                    // Update existing subject
+                    await db.collection('courses').doc(courseId)
+                        .collection('subjects').doc(id)
+                        .update(subjectData);
+                    showAlert('Subject updated successfully!', 'success');
+                } else {
+                    // Create new subject
+                    subjectData.createdAt = new Date().toISOString();
+                    await db.collection('courses').doc(courseId)
+                        .collection('subjects')
+                        .add(subjectData);
+                    showAlert('Subject created successfully!', 'success');
+                }
+                
+                hideModal('subject-modal');
+                await loadSubjects();
+                await loadChapters();
+                updateDashboardStats();
+                
+            } catch (error) {
+                console.error("Error saving subject:", error);
+                showError(errorDiv, "Failed to save subject. Please try again.");
+            } finally {
+                setLoading(saveBtn, false);
+            }
+        }
+        
+        async function handleChapterSave(e) {
+            e.preventDefault();
+            
+            const form = document.getElementById('chapter-form');
+            const id = document.getElementById('chapter-id').value;
+            const subjectId = document.getElementById('chapter-subject').value;
+            const title = document.getElementById('chapter-title').value;
+            const description = document.getElementById('chapter-description').value;
+            const order = parseInt(document.getElementById('chapter-order').value);
+            const saveBtn = document.getElementById('chapter-save-btn');
+            const errorDiv = document.getElementById('chapter-form-error');
+            
+            if (!subjectId) {
+                showError(errorDiv, "Please select a subject");
+                return;
+            }
+            
+            if (!title.trim()) {
+                showError(errorDiv, "Chapter title is required");
+                return;
+            }
+            
+            if (!order || order < 1) {
+                showError(errorDiv, "Order must be a positive number");
+                return;
+            }
+            
+            setLoading(saveBtn, true);
+            hideError(errorDiv);
+            
+            try {
+                // Find course ID from subject
+                const subject = subjects.find(s => s.id === subjectId);
+                if (!subject) {
+                    showError(errorDiv, "Subject not found");
+                    setLoading(saveBtn, false);
+                    return;
+                }
+                
+                const chapterData = {
+                    title: title.trim(),
+                    description: description.trim(),
+                    order: order,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                if (id) {
+                    // Update existing chapter
+                    await db.collection('courses').doc(subject.courseId)
+                        .collection('subjects').doc(subjectId)
+                        .collection('chapters').doc(id)
+                        .update(chapterData);
+                    showAlert('Chapter updated successfully!', 'success');
+                } else {
+                    // Create new chapter
+                    chapterData.createdAt = new Date().toISOString();
+                    await db.collection('courses').doc(subject.courseId)
+                        .collection('subjects').doc(subjectId)
+                        .collection('chapters')
+                        .add(chapterData);
+                    showAlert('Chapter created successfully!', 'success');
+                }
+                
+                hideModal('chapter-modal');
+                await loadChapters();
+                updateDashboardStats();
+                
+            } catch (error) {
+                console.error("Error saving chapter:", error);
+                showError(errorDiv, "Failed to save chapter. Please try again.");
+            } finally {
+                setLoading(saveBtn, false);
+            }
+        }
+        
+        async function handleLectureSave(e) {
+            e.preventDefault();
+            
+            const form = document.getElementById('lecture-form');
+            const id = document.getElementById('lecture-id').value;
+            const chapterId = document.getElementById('lecture-chapter').value;
+            const title = document.getElementById('lecture-title').value;
+            const video = document.getElementById('lecture-video').value;
+            const order = parseInt(document.getElementById('lecture-order').value);
+            const saveBtn = document.getElementById('lecture-save-btn');
+            const errorDiv = document.getElementById('lecture-form-error');
+            
+            if (!chapterId) {
+                showError(errorDiv, "Please select a chapter");
+                return;
+            }
+            
+            if (!title.trim()) {
+                showError(errorDiv, "Lecture title is required");
+                return;
+            }
+            
+            if (!video.trim()) {
+                showError(errorDiv, "Video embed code/URL is required");
+                return;
+            }
+            
+            if (!order || order < 1) {
+                showError(errorDiv, "Order must be a positive number");
+                return;
+            }
+            
+            setLoading(saveBtn, true);
+            hideError(errorDiv);
+            
+            try {
+                // Find course and subject ID from chapter
+                const chapter = chapters.find(c => c.id === chapterId);
+                if (!chapter) {
+                    showError(errorDiv, "Chapter not found");
+                    setLoading(saveBtn, false);
+                    return;
+                }
+                
+                const lectureData = {
+                    title: title.trim(),
+                    videoEmbedCode: video.trim(),
+                    order: order,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                if (id) {
+                    // Update existing lecture
+                    await db.collection('courses').doc(chapter.courseId)
+                        .collection('subjects').doc(chapter.subjectId)
+                        .collection('chapters').doc(chapterId)
+                        .collection('lectures').doc(id)
+                        .update(lectureData);
+                    showAlert('Lecture updated successfully!', 'success');
+                } else {
+                    // Create new lecture
+                    lectureData.createdAt = new Date().toISOString();
+                    await db.collection('courses').doc(chapter.courseId)
+                        .collection('subjects').doc(chapter.subjectId)
+                        .collection('chapters').doc(chapterId)
+                        .collection('lectures')
+                        .add(lectureData);
+                    showAlert('Lecture created successfully!', 'success');
+                }
+                
+                hideModal('lecture-modal');
+                await loadLectures();
+                
+            } catch (error) {
+                console.error("Error saving lecture:", error);
+                showError(errorDiv, "Failed to save lecture. Please try again.");
+            } finally {
+                setLoading(saveBtn, false);
+            }
+        }
+        
+        async function handleNotesSave(e) {
+            e.preventDefault();
+            // Implementation for saving notes
+            // This would handle uploading images to Firebase Storage and saving URLs to Firestore
+            showAlert('Notes functionality coming soon!', 'info');
+        }
+        
+        async function handleQuestionSave(e) {
+            e.preventDefault();
+            
+            const form = document.getElementById('question-form');
+            const id = document.getElementById('question-id').value;
+            const chapterId = document.getElementById('question-chapter').value;
+            const questionText = document.getElementById('question-text').value;
+            const explanation = document.getElementById('question-explanation').value;
+            const videoUrl = document.getElementById('question-video-url').value;
+            const order = parseInt(document.getElementById('question-order').value);
+            const saveBtn = document.getElementById('question-save-btn');
+            const errorDiv = document.getElementById('question-form-error');
+            
+            if (!chapterId) {
+                showError(errorDiv, "Please select a chapter");
+                return;
+            }
+            
+            if (!questionText.trim()) {
+                showError(errorDiv, "Question text is required");
+                return;
+            }
+            
+            if (!explanation.trim()) {
+                showError(errorDiv, "Explanation is required");
+                return;
+            }
+            
+            if (!order || order < 1) {
+                showError(errorDiv, "Order must be a positive number");
+                return;
+            }
+            
+            // Get options
+            const options = [];
+            let correctIndex = null;
+            const optionInputs = document.querySelectorAll('.option-input');
+            const correctRadios = document.querySelectorAll('input[name="correct-option"]');
+            
+            optionInputs.forEach((input, index) => {
+                if (!input.value.trim()) {
+                    showError(errorDiv, `Option ${String.fromCharCode(65 + index)} is required`);
+                    return;
+                }
+                options.push(input.value.trim());
+            });
+            
+            correctRadios.forEach(radio => {
+                if (radio.checked) {
+                    correctIndex = parseInt(radio.value);
+                }
+            });
+            
+            if (correctIndex === null) {
+                showError(errorDiv, "Please select the correct option");
+                return;
+            }
+            
+            if (options.length !== 4) {
+                showError(errorDiv, "All 4 options are required");
+                return;
+            }
+            
+            setLoading(saveBtn, true);
+            hideError(errorDiv);
+            
+            try {
+                // Find course and subject ID from chapter
+                const chapter = chapters.find(c => c.id === chapterId);
+                if (!chapter) {
+                    showError(errorDiv, "Chapter not found");
+                    setLoading(saveBtn, false);
+                    return;
+                }
+                
+                const questionData = {
+                    question: questionText.trim(),
+                    options: options,
+                    correctIndex: correctIndex,
+                    explanation: explanation.trim(),
+                    explanationVideoUrl: videoUrl.trim() || null,
+                    order: order,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // Handle image uploads (simplified - in production you'd upload to Firebase Storage)
+                const questionFile = document.getElementById('question-file-input').files[0];
+                const explanationFile = document.getElementById('explanation-file-input').files[0];
+                
+                // Note: For production, you would upload these files to Firebase Storage
+                // and get their URLs before saving to Firestore
+                
+                if (id) {
+                    // Update existing question
+                    await db.collection('courses').doc(chapter.courseId)
+                        .collection('subjects').doc(chapter.subjectId)
+                        .collection('chapters').doc(chapterId)
+                        .collection('questions').doc(id)
+                        .update(questionData);
+                    showAlert('Question updated successfully!', 'success');
+                } else {
+                    // Create new question
+                    questionData.createdAt = new Date().toISOString();
+                    await db.collection('courses').doc(chapter.courseId)
+                        .collection('subjects').doc(chapter.subjectId)
+                        .collection('chapters').doc(chapterId)
+                        .collection('questions')
+                        .add(questionData);
+                    showAlert('Question created successfully!', 'success');
+                }
+                
+                hideModal('question-modal');
+                await loadQuestions();
+                
+            } catch (error) {
+                console.error("Error saving question:", error);
+                showError(errorDiv, "Failed to save question. Please try again.");
+            } finally {
+                setLoading(saveBtn, false);
+            }
+        }
+        
+        // Delete Functions
+        async function deleteCourse(courseId) {
+            try {
+                // Delete all subjects in this course (and their subcollections)
+                const subjectsSnapshot = await db.collection('courses').doc(courseId)
+                    .collection('subjects').get();
+                
+                const deletePromises = [];
+                subjectsSnapshot.forEach(doc => {
+                    deletePromises.push(deleteSubjectAndContents(courseId, doc.id));
+                });
+                
+                await Promise.all(deletePromises);
+                
+                // Delete the course itself
+                await db.collection('courses').doc(courseId).delete();
+                
+                showAlert('Course deleted successfully!', 'success');
+                await loadData();
+                
+            } catch (error) {
+                console.error("Error deleting course:", error);
+                showAlert('Failed to delete course. Please try again.', 'error');
+            }
+        }
+        
+        async function deleteSubjectAndContents(courseId, subjectId) {
+            try {
+                // Delete all chapters in this subject (and their subcollections)
+                const chaptersSnapshot = await db.collection('courses').doc(courseId)
+                    .collection('subjects').doc(subjectId)
+                    .collection('chapters').get();
+                
+                const deletePromises = [];
+                chaptersSnapshot.forEach(doc => {
+                    deletePromises.push(deleteChapterAndContents(courseId, subjectId, doc.id));
+                });
+                
+                // Delete permissions
+                const permissionsSnapshot = await db.collection('courses').doc(courseId)
+                    .collection('subjects').doc(subjectId)
+                    .collection('permissions').get();
+                
+                permissionsSnapshot.forEach(doc => {
+                    deletePromises.push(doc.ref.delete());
+                });
+                
+                await Promise.all(deletePromises);
+                
+                // Delete the subject itself
+                await db.collection('courses').doc(courseId)
+                    .collection('subjects').doc(subjectId).delete();
+                    
+            } catch (error) {
+                console.error("Error deleting subject contents:", error);
+                throw error;
+            }
+        }
+        
+        async function deleteChapterAndContents(courseId, subjectId, chapterId) {
+            try {
+                // Delete lectures
+                const lecturesSnapshot = await db.collection('courses').doc(courseId)
+                    .collection('subjects').doc(subjectId)
+                    .collection('chapters').doc(chapterId)
+                    .collection('lectures').get();
+                
+                const deletePromises = [];
+                lecturesSnapshot.forEach(doc => {
+                    deletePromises.push(doc.ref.delete());
+                });
+                
+                // Delete notes
+                const notesSnapshot = await db.collection('courses').doc(courseId)
+                    .collection('subjects').doc(subjectId)
+                    .collection('chapters').doc(chapterId)
+                    .collection('notes').get();
+                
+                notesSnapshot.forEach(doc => {
+                    deletePromises.push(doc.ref.delete());
+                });
+                
+                // Delete questions
+                const questionsSnapshot = await db.collection('courses').doc(courseId)
+                    .collection('subjects').doc(subjectId)
+                    .collection('chapters').doc(chapterId)
+                    .collection('questions').get();
+                
+                questionsSnapshot.forEach(doc => {
+                    deletePromises.push(doc.ref.delete());
+                });
+                
+                await Promise.all(deletePromises);
+                
+                // Delete the chapter itself
+                await db.collection('courses').doc(courseId)
+                    .collection('subjects').doc(subjectId)
+                    .collection('chapters').doc(chapterId).delete();
+                    
+            } catch (error) {
+                console.error("Error deleting chapter contents:", error);
+                throw error;
+            }
+        }
+        
+        async function deleteSubject(subjectId, courseId) {
+            try {
+                await deleteSubjectAndContents(courseId, subjectId);
+                showAlert('Subject deleted successfully!', 'success');
+                await loadSubjects();
+                await loadChapters();
+                updateDashboardStats();
+            } catch (error) {
+                console.error("Error deleting subject:", error);
+                showAlert('Failed to delete subject. Please try again.', 'error');
+            }
+        }
+        
+        async function deleteChapter(chapterId, courseId, subjectId) {
+            try {
+                await deleteChapterAndContents(courseId, subjectId, chapterId);
+                showAlert('Chapter deleted successfully!', 'success');
+                await loadChapters();
+                updateDashboardStats();
+            } catch (error) {
+                console.error("Error deleting chapter:", error);
+                showAlert('Failed to delete chapter. Please try again.', 'error');
+            }
+        }
+        
+        async function deleteLecture(lectureId, courseId, subjectId, chapterId) {
+            try {
+                await db.collection('courses').doc(courseId)
+                    .collection('subjects').doc(subjectId)
+                    .collection('chapters').doc(chapterId)
+                    .collection('lectures').doc(lectureId)
+                    .delete();
+                    
+                showAlert('Lecture deleted successfully!', 'success');
+                await loadLectures();
+            } catch (error) {
+                console.error("Error deleting lecture:", error);
+                showAlert('Failed to delete lecture. Please try again.', 'error');
+            }
+        }
+        
+        async function deleteNotes(notesId, courseId, subjectId, chapterId) {
+            try {
+                await db.collection('courses').doc(courseId)
+                    .collection('subjects').doc(subjectId)
+                    .collection('chapters').doc(chapterId)
+                    .collection('notes').doc(notesId)
+                    .delete();
+                    
+                showAlert('Notes deleted successfully!', 'success');
+                await loadNotes();
+            } catch (error) {
+                console.error("Error deleting notes:", error);
+                showAlert('Failed to delete notes. Please try again.', 'error');
+            }
+        }
+        
+        async function deleteQuestion(questionId, courseId, subjectId, chapterId) {
+            try {
+                await db.collection('courses').doc(courseId)
+                    .collection('subjects').doc(subjectId)
+                    .collection('chapters').doc(chapterId)
+                    .collection('questions').doc(questionId)
+                    .delete();
+                    
+                showAlert('Question deleted successfully!', 'success');
+                await loadQuestions();
+            } catch (error) {
+                console.error("Error deleting question:", error);
+                showAlert('Failed to delete question. Please try again.', 'error');
+            }
+        }
+        
+        // Edit Functions
+        async function editCourse(courseId) {
+            showCourseModal(courseId);
+        }
+        
+        async function editSubject(subjectId, courseId) {
+            showSubjectModal(subjectId, courseId);
+        }
+        
+        async function editChapter(chapterId, subjectId, courseId) {
+            showChapterModal(chapterId, subjectId, courseId);
+        }
+        
+        async function editLecture(data) {
+            // Implementation for editing lecture
+            showAlert('Edit lecture functionality coming soon!', 'info');
+        }
+        
+        async function editNotes(data) {
+            // Implementation for editing notes
+            showAlert('Edit notes functionality coming soon!', 'info');
+        }
+        
+        async function editQuestion(data) {
+            // Implementation for editing question
+            showAlert('Edit question functionality coming soon!', 'info');
+        }
+        
+        // Permission Functions
+        async function grantPermission() {
+            const email = permissionEmail.value.trim();
+            const subjectId = permissionSubject.value;
+            
+            if (!email) {
+                showAlert('Please enter user email', 'error');
+                return;
+            }
+            
+            if (!subjectId) {
+                showAlert('Please select a subject', 'error');
+                return;
+            }
+            
+            try {
+                // Find subject
+                const subject = subjects.find(s => s.id === subjectId);
+                if (!subject) {
+                    showAlert('Subject not found', 'error');
+                    return;
+                }
+                
+                // First, try to find user by email
+                const usersSnapshot = await db.collection('users')
+                    .where('email', '==', email)
+                    .get();
+                
+                let userId;
+                if (!usersSnapshot.empty) {
+                    userId = usersSnapshot.docs[0].id;
+                } else {
+                    // If user doesn't exist, use email as ID
+                    userId = email;
+                }
+                
+                // Grant permission
+                await db.collection('courses').doc(subject.courseId)
+                    .collection('subjects').doc(subjectId)
+                    .collection('permissions').doc(userId)
+                    .set({
+                        userEmail: email,
+                        userId: userId,
+                        approved: true,
+                        grantedAt: new Date().toISOString(),
+                        grantedBy: currentUser.email
+                    });
+                
+                showAlert('Permission granted successfully!', 'success');
+                permissionEmail.value = '';
+                permissionSubject.value = '';
+                
+                await loadPermissions();
+                
+            } catch (error) {
+                console.error("Error granting permission:", error);
+                showAlert('Failed to grant permission. Please try again.', 'error');
+            }
+        }
+        
+        async function revokePermission(data) {
+            try {
+                await db.collection('courses').doc(data.course)
+                    .collection('subjects').doc(data.subject)
+                    .collection('permissions').doc(data.id)
+                    .delete();
+                    
+                showAlert('Permission revoked successfully!', 'success');
+                await loadPermissions();
+            } catch (error) {
+                console.error("Error revoking permission:", error);
+                showAlert('Failed to revoke permission. Please try again.', 'error');
+            }
+        }
+        
+        // Utility Functions
+        function showError(element, message) {
+            element.textContent = message;
+            element.classList.remove('hidden');
+        }
+        
+        function hideError(element) {
+            element.textContent = '';
+            element.classList.add('hidden');
+        }
+        
+        function setLoading(button, isLoading) {
+            const spinner = button.querySelector('.loading-spinner');
+            const text = button.querySelector('span');
+            
+            if (isLoading) {
+                button.disabled = true;
+                if (spinner) spinner.classList.remove('hidden');
+                if (text) text.classList.add('hidden');
+            } else {
+                button.disabled = false;
+                if (spinner) spinner.classList.add('hidden');
+                if (text) text.classList.remove('hidden');
+            }
+        }
+        
+        function showAlert(message, type = 'info') {
+            // Create alert element
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span>${message}</span>
+                    <button class="text-sm" onclick="this.parentElement.parentElement.remove()">×</button>
+                </div>
+            `;
+            
+            // Add to top of content
+            const content = document.querySelector('.admin-content');
+            content.insertBefore(alert, content.firstChild);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 5000);
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'Unknown';
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function getAuthErrorMessage(error) {
+            switch (error.code) {
+                case 'auth/invalid-email':
+                    return 'Invalid email address.';
+                case 'auth/user-disabled':
+                    return 'This account has been disabled.';
+                case 'auth/user-not-found':
+                    return 'No account found with this email.';
+                case 'auth/wrong-password':
+                    return 'Incorrect password.';
+                case 'auth/email-already-in-use':
+                    return 'An account with this email already exists.';
+                case 'auth/weak-password':
+                    return 'Password is too weak.';
+                case 'auth/network-request-failed':
+                    return 'Network error. Please check your connection.';
+                default:
+                    return error.message || 'Authentication failed. Please try again.';
+            }
+        }
+    </script>
+</body>
+</html>
