@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimum-scale=1.0">
+    <title>ConceptBlitz - Sign In</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts (Anton for brand and Merriweather for body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+    <style>
+        /* CRITICAL: Ensure HTML and BODY are full height and non-scrollable */
+        html {
+            height: 100%;
+            overflow: hidden !important;
+        }
+
+        /* Use the Merriweather font family as default */
+        body {
+            font-family: 'Merriweather', serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings: "wdth" 100;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            
+            /* White background */
+            background-color: #ffffff;
+            color: #000000;
+            
+            /* CRITICAL: Prevent the main body from scrolling at all */
+            overflow: hidden !important; 
+            
+            user-select: none;
+            -webkit-user-select: none; 
+            -moz-user-select: none;
+            -ms-user-select: none; 
+            
+            /* Prevents elastic scrolling on iOS */
+            overscroll-behavior: none;
+            
+            /* Make body a fixed container occupying full screen */
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* App wrapper - uses dynamic viewport height for mobile keyboard stability */
+        #app-wrapper {
+            height: 100vh; /* Fallback */
+            height: 100dvh; /* Dynamic viewport height (best for mobile keyboard) */
+            width: 100%;
+            position: absolute; /* Relative to fixed body */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Style for the ConceptBlitz logo font - USING ANTON */
+        .conceptblitz-logo {
+            font-family: 'Anton', sans-serif;
+            font-weight: 400;
+            font-style: normal;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+        
+        /* Brand font colors - White and Orange */
+        .concept-text {
+            color: #000000;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .blitz-text {
+            color: #F97316; /* Orange */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Strict No-Oval/No-Round Policy - Override for slight rounding */
+        * {
+            border-radius: 0 !important;
+        }
+
+        /* Override for slight rounding on specific elements */
+        .auth-modal {
+            border-radius: 4px !important;
+        }
+
+        /* ===== SIGN IN PROMPT STYLES ===== */
+        .signin-prompt-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            background: white;
+        }
+        
+        .signin-icon {
+            font-size: 64px;
+            color: #6b7280;
+            margin-bottom: 24px;
+            opacity: 0.7;
+        }
+        
+        .signin-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+        
+        .signin-message {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 32px;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+        
+        .signin-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            margin-top: 16px;
+        }
+        
+        .signin-button:hover {
+            background: #2563eb;
+        }
+        
+        .signin-button:active {
+            background: #1d4ed8;
+        }
+        
+        /* ===== AUTH MODAL STYLES ===== */
+        .auth-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .auth-modal {
+            background: white;
+            width: 40%;
+            min-width: 300px;
+            max-width: 400px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            animation: slideDown 0.3s ease-out;
+            border-radius: 4px !important;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .auth-header {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        
+        .auth-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .auth-body {
+            padding: 20px;
+        }
+        
+        .auth-field {
+            margin-bottom: 16px;
+        }
+        
+        .auth-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .auth-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            background: #f9fafb;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+            border-radius: 0 !important;
+        }
+        
+        .auth-input:focus {
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .auth-error {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+        
+        .auth-error.show {
+            display: block;
+        }
+        
+        .auth-button {
+            width: 100%;
+            padding: 12px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .auth-button:hover {
+            background: #2563eb;
+        }
+        
+        .auth-button:active {
+            background: #1d4ed8;
+        }
+        
+        .auth-button.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .auth-footer {
+            padding: 12px 20px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        .signup-link {
+            color: #3b82f6;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .signup-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* ===== ERROR MESSAGE STYLES ===== */
+        .error-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .error-icon {
+            font-size: 64px;
+            color: #ef4444;
+            margin-bottom: 24px;
+            opacity: 0.7;
+        }
+        
+        .error-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+        
+        .error-message {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 32px;
+            max-width: 400px;
+            line-height: 1.5;
+        }
+        
+        /* Modern Loading Indicator Styles */
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+        
+        .loading-spinner::before,
+        .loading-spinner::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            animation: modern-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+        
+        .loading-spinner::before {
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+        }
+        
+        .loading-spinner::after {
+            border: 3px solid transparent;
+            border-top-color: #3b82f6;
+            animation-delay: -0.6s;
+        }
+        
+        @keyframes modern-spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 2.5rem 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            max-width: 300px;
+            width: 90%;
+        }
+
+        .loading-text {
+            margin-top: 1.5rem;
+            font-size: 1rem;
+            color: #4b5563;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Ensure all text elements inherit the body font */
+        h1, h2, h3, h4, h5, h6, p, span, div, button, input, textarea, label, a {
+            font-family: 'Merriweather', serif;
+        }
+
+        /* Exception for logo only */
+        .conceptblitz-logo {
+            font-family: 'Anton', sans-serif !important;
+        }
+
+        /* Buttons should also use Merriweather */
+        button {
+            font-family: 'Merriweather', serif !important;
+        }
+
+        /* Input fields */
+        input, textarea {
+            font-family: 'Merriweather', serif !important;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .auth-modal {
+                width: 80% !important;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .auth-modal {
+                width: 90% !important;
+                margin: 0 16px;
+            }
+            
+            .signin-icon {
+                font-size: 56px;
+            }
+            
+            .signin-title {
+                font-size: 22px;
+            }
+            
+            .signin-message {
+                font-size: 15px;
+                padding: 0 16px;
+            }
+        }
+    </style>
+</head>
+
+<body class="h-full bg-white">
+
+    <!-- Auth Page Container -->
+    <div id="app-wrapper">
+        <!-- Main content area - shows Sign In prompt by default -->
+        <main id="auth-container" class="flex-1">
+            <!-- Content will be loaded dynamically -->
+        </main>
+    </div>
+
+    <script>
+        // ===== SESSION MANAGEMENT SYSTEM =====
+        class SessionManager {
+            constructor() {
+                this.db = null;
+                this.currentSessionId = null;
+                this.sessionListener = null;
+                this.isInitialized = false;
+                this.listenerActive = false;
+                this.lastSessionCreation = 0;
+            }
+
+            initialize(db) {
+                if (this.isInitialized) return;
+                
+                try {
+                    this.db = db;
+                    this.isInitialized = true;
+                    console.log("SessionManager initialized");
+                    
+                    this.checkExistingSession();
+                } catch (error) {
+                    console.error("SessionManager initialization error:", error);
+                }
+            }
+
+            generateSessionId() {
+                const array = new Uint32Array(8);
+                window.crypto.getRandomValues(array);
+                return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
+            }
+
+            async createSession(userUid) {
+                if (!this.db || !userUid) {
+                    console.error("Cannot create session: missing db or userUid");
+                    return null;
+                }
+
+                // CRITICAL: Check if device already has a local session ID
+                const existingLocalSessionId = this.getLocalSessionId(userUid);
+                if (existingLocalSessionId) {
+                    console.log("Device already has local session ID. NOT creating new session.");
+                    this.currentSessionId = existingLocalSessionId;
+                    return existingLocalSessionId;
+                }
+
+                try {
+                    const sessionId = this.generateSessionId();
+                    this.currentSessionId = sessionId;
+                    
+                    // Store in localStorage FIRST
+                    localStorage.setItem(`session_${userUid}`, sessionId);
+                    
+                    // Set timestamp to prevent race conditions
+                    this.lastSessionCreation = Date.now();
+                    
+                    // Write to Firestore - this will trigger logout on other devices
+                    await this.db.collection('sessions').doc(userUid).set({
+                        sessionId: sessionId,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    console.log("New session created for user:", userUid);
+                    return sessionId;
+                } catch (error) {
+                    console.error("Error creating session:", error);
+                    return null;
+                }
+            }
+
+            getLocalSessionId(userUid) {
+                // ALWAYS read fresh from localStorage, never cache
+                return localStorage.getItem(`session_${userUid}`);
+            }
+
+            clearLocalSession(userUid) {
+                if (userUid) {
+                    localStorage.removeItem(`session_${userUid}`);
+                }
+                this.currentSessionId = null;
+            }
+
+            setupSessionListener(userUid) {
+                if (!this.db || !userUid) {
+                    console.error("Cannot setup session listener: missing db or userUid");
+                    return;
+                }
+
+                this.removeSessionListener();
+
+                // Get FRESH local session ID from localStorage
+                const localSessionId = this.getLocalSessionId(userUid);
+                this.currentSessionId = localSessionId;
+
+                console.log("Setting up session listener for user:", userUid);
+                console.log("Local session ID:", localSessionId);
+
+                // CRITICAL: Listen to real-time updates
+                this.sessionListener = this.db.collection('sessions').doc(userUid)
+                    .onSnapshot((doc) => {
+                        this.handleSessionUpdate(doc, userUid);
+                    }, (error) => {
+                        console.error("Session listener error:", error);
+                        this.retrySessionListener(userUid);
+                    });
+                
+                this.listenerActive = true;
+            }
+
+            async handleSessionUpdate(doc, userUid) {
+                // Get FRESH local session ID from localStorage on every update
+                const currentLocalSessionId = this.getLocalSessionId(userUid);
+                
+                if (!doc.exists) {
+                    console.log("Session document doesn't exist");
+                    
+                    // Only create new session if device has no local session
+                    if (!currentLocalSessionId) {
+                        console.log("Creating initial session for device");
+                        await this.createSession(userUid);
+                    }
+                    return;
+                }
+
+                const sessionData = doc.data();
+                const firestoreSessionId = sessionData.sessionId;
+
+                console.log("Firestore session ID:", firestoreSessionId);
+                console.log("Current local session ID:", currentLocalSessionId);
+
+                // CRITICAL: Check for session mismatch
+                if (currentLocalSessionId && firestoreSessionId !== currentLocalSessionId) {
+                    console.log("SESSION MISMATCH DETECTED! Auto-logout triggered...");
+                    
+                    // Immediately remove listener to prevent loops
+                    this.removeSessionListener();
+                    
+                    // Clear local session data
+                    this.clearLocalSession(userUid);
+                    
+                    try {
+                        // Sign out from Firebase auth
+                        await firebase.auth().signOut();
+                        console.log("Auto-logout completed due to session mismatch");
+                        
+                        // Trigger logout UI
+                        window.authPageManager.handleAutoLogout();
+                    } catch (signOutError) {
+                        console.error("Error during auto-logout:", signOutError);
+                        // Still redirect to login
+                        window.authPageManager.handleAutoLogout();
+                    }
+                } else if (!currentLocalSessionId && firestoreSessionId) {
+                    // This device has no session but Firestore has one
+                    // This happens when user logs in on another device
+                    console.log("This device has no session but Firestore has one - logging out");
+                    
+                    this.removeSessionListener();
+                    this.clearLocalSession(userUid);
+                    
+                    try {
+                        await firebase.auth().signOut();
+                        window.authPageManager.handleAutoLogout();
+                    } catch (error) {
+                        console.error("Error during logout:", error);
+                        window.authPageManager.handleAutoLogout();
+                    }
+                }
+            }
+
+            retrySessionListener(userUid) {
+                if (this.listenerActive) return;
+                
+                setTimeout(() => {
+                    const auth = firebase.auth();
+                    const user = auth.currentUser;
+                    if (user && user.uid === userUid) {
+                        this.setupSessionListener(userUid);
+                    }
+                }, 5000);
+            }
+
+            removeSessionListener() {
+                if (this.sessionListener) {
+                    this.sessionListener();
+                    this.sessionListener = null;
+                    this.listenerActive = false;
+                    console.log("Session listener removed");
+                }
+            }
+
+            async checkExistingSession() {
+                const auth = firebase.auth();
+                const user = auth.currentUser;
+                
+                if (user) {
+                    const localSessionId = this.getLocalSessionId(user.uid);
+                    if (localSessionId) {
+                        this.currentSessionId = localSessionId;
+                        this.setupSessionListener(user.uid);
+                    }
+                }
+            }
+
+            async onUserLogin(userUid) {
+                // Clear any existing session first
+                this.clearLocalSession(userUid);
+                
+                // Create NEW session (this will overwrite Firestore and log out other devices)
+                const sessionId = await this.createSession(userUid);
+                if (sessionId) {
+                    this.setupSessionListener(userUid);
+                }
+                return sessionId;
+            }
+
+            onUserLogout(userUid) {
+                this.removeSessionListener();
+                this.clearLocalSession(userUid);
+            }
+        }
+
+        // ===== AUTH PAGE MANAGER =====
+        class AuthPageManager {
+            constructor() {
+                this.auth = null;
+                this.db = null;
+                this.currentUser = null;
+                this.sessionManager = new SessionManager();
+                this.isInitialized = false;
+                this.authModal = null;
+                this.signUpModal = null;
+                this.redirectAfterLogin = null;
+                this.initialAuthCheckDone = false;
+                this.firebaseConfig = {
+                    apiKey: "AIzaSyBJ_G5o4otg7riemfJDMOcPoHoIVH7emsc",
+                    authDomain: "geobazarr.firebaseapp.com",
+                    databaseURL: "https://geobazarr-default-rtdb.firebaseio.com",
+                    projectId: "geobazarr",
+                    storageBucket: "geobazarr.firebasestorage.app",
+                    messagingSenderId: "679949247383",
+                    appId: "1:679949247383:web:036d4f32038422ebb89ad2"
+                };
+                
+                this.initialize();
+            }
+            
+            initialize() {
+                if (this.isInitialized) return;
+                
+                try {
+                    // Show loader while initializing
+                    this.showLoader();
+                    
+                    // Initialize Firebase
+                    firebase.initializeApp(this.firebaseConfig);
+                    this.auth = firebase.auth();
+                    this.db = firebase.firestore();
+                    
+                    // Get redirect URL from query parameter or sessionStorage
+                    this.getRedirectUrl();
+                    
+                    // Setup auth state listener FIRST
+                    this.setupAuthListener();
+                    
+                    // Initialize session manager
+                    this.sessionManager.initialize(this.db);
+                    
+                    this.isInitialized = true;
+                    console.log("AuthPageManager initialized");
+                    
+                } catch (error) {
+                    console.error("AuthPageManager initialization error:", error);
+                    this.hideLoader();
+                    this.showError("Failed to initialize authentication. Please refresh the page.");
+                }
+            }
+            
+            getRedirectUrl() {
+                // Try to get redirect URL from query parameter first
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectParam = urlParams.get('redirect');
+                
+                if (redirectParam) {
+                    // Validate it's a same-domain URL
+                    try {
+                        const redirectUrl = new URL(redirectParam, window.location.origin);
+                        if (redirectUrl.origin === window.location.origin) {
+                            this.redirectAfterLogin = redirectParam;
+                            sessionStorage.setItem('auth_redirect', redirectParam);
+                            console.log("Redirect URL from query param:", this.redirectAfterLogin);
+                        } else {
+                            console.warn("Invalid redirect URL (cross-domain):", redirectParam);
+                        }
+                    } catch (e) {
+                        console.warn("Invalid redirect URL:", redirectParam);
+                    }
+                } else {
+                    // Try to get from sessionStorage
+                    const storedRedirect = sessionStorage.getItem('auth_redirect');
+                    if (storedRedirect) {
+                        this.redirectAfterLogin = storedRedirect;
+                        console.log("Redirect URL from sessionStorage:", this.redirectAfterLogin);
+                    }
+                }
+            }
+            
+            setupAuthListener() {
+                this.auth.onAuthStateChanged(async (user) => {
+                    console.log("Auth state changed on auth page:", user ? `User ${user.uid} logged in` : "No user");
+                    
+                    // Hide loader
+                    this.hideLoader();
+                    
+                    if (user) {
+                        // User is logged in
+                        this.currentUser = user;
+                        
+                        // Create session - this will log out other devices
+                        await this.sessionManager.onUserLogin(user.uid);
+                        
+                        // Handle successful login immediately
+                        this.handleSuccessfulLogin();
+                    } else {
+                        // User is not logged in
+                        if (this.currentUser?.uid) {
+                            this.sessionManager.onUserLogout(this.currentUser.uid);
+                        }
+                        this.currentUser = null;
+                        
+                        // Mark initial auth check as done
+                        this.initialAuthCheckDone = true;
+                        
+                        // Show Sign In To Continue screen
+                        this.showSignInPrompt();
+                    }
+                });
+            }
+            
+            handleSuccessfulLogin() {
+                // Close all modals
+                this.closeAllModals();
+                
+                // Get the redirect URL
+                let redirectUrl = this.redirectAfterLogin || sessionStorage.getItem('auth_redirect');
+                
+                // Clear stored redirect
+                sessionStorage.removeItem('auth_redirect');
+                this.redirectAfterLogin = null;
+                
+                // Default to index8.html if no redirect
+                if (!redirectUrl) {
+                    redirectUrl = 'https://dilshadalmm.github.io/Embed/index8.html';
+                }
+                
+                console.log("Redirecting after login to:", redirectUrl);
+                
+                // Redirect IMMEDIATELY without showing any UI
+                window.location.href = redirectUrl;
+            }
+            
+            handleAutoLogout() {
+                // Clear any stored redirect
+                sessionStorage.removeItem('auth_redirect');
+                this.redirectAfterLogin = null;
+                
+                // Clear courseId from localStorage
+                localStorage.removeItem('conceptblitz_courseId');
+                
+                // Show Sign In To Continue screen with message
+                this.showSignInPrompt("Your session has expired. Please sign in again.");
+            }
+            
+            showAuthModal() {
+                this.authModal = document.createElement('div');
+                this.authModal.className = 'auth-modal-overlay';
+                this.authModal.innerHTML = `
+                    <div class="auth-modal">
+                        <div class="auth-header">
+                            <div class="auth-title">Sign In to Continue</div>
+                        </div>
+                        <div class="auth-body">
+                            <div class="auth-field">
+                                <label class="auth-label">Enter Email</label>
+                                <input type="email" id="auth-email" class="auth-input" placeholder="your@email.com">
+                                <div id="email-error" class="auth-error"></div>
+                            </div>
+                            
+                            <div class="auth-field">
+                                <label class="auth-label">Enter Password</label>
+                                <input type="password" id="auth-password" class="auth-input" placeholder="••••••••">
+                                <div id="password-error" class="auth-error"></div>
+                            </div>
+                            
+                            <div class="auth-field">
+                                <label class="auth-label">Enter courseId (optional)</label>
+                                <input type="text" id="auth-courseid" class="auth-input" placeholder="Enter course ID">
+                                <div id="courseid-error" class="auth-error"></div>
+                            </div>
+                            
+                            <button id="sign-in-button" class="auth-button">Sign In</button>
+                        </div>
+                        <div class="auth-footer">
+                            Don't have an account? <span class="signup-link" id="signup-link">Sign Up</span>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(this.authModal);
+                
+                this.setupAuthModalEvents();
+            }
+            
+            setupAuthModalEvents() {
+                const signInButton = document.getElementById('sign-in-button');
+                const emailInput = document.getElementById('auth-email');
+                const passwordInput = document.getElementById('auth-password');
+                const courseIdInput = document.getElementById('auth-courseid');
+                const signupLink = document.getElementById('signup-link');
+                
+                signInButton.addEventListener('click', () => {
+                    this.signInWithEmail();
+                });
+                
+                emailInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        passwordInput.focus();
+                    }
+                });
+                
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        courseIdInput.focus();
+                    }
+                });
+                
+                courseIdInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.signInWithEmail();
+                    }
+                });
+                
+                signupLink.addEventListener('click', () => {
+                    this.showSignUpModal();
+                });
+                
+                this.authModal.addEventListener('click', (e) => {
+                    if (e.target === this.authModal) {
+                        this.hideAuthModal();
+                    }
+                });
+            }
+            
+            showSignUpModal() {
+                this.hideAuthModal();
+                
+                this.signUpModal = document.createElement('div');
+                this.signUpModal.className = 'auth-modal-overlay';
+                this.signUpModal.innerHTML = `
+                    <div class="auth-modal">
+                        <div class="auth-header">
+                            <div class="auth-title">Create Account</div>
+                        </div>
+                        <div class="auth-body">
+                            <div class="auth-field">
+                                <label class="auth-label">Enter Email</label>
+                                <input type="email" id="signup-email" class="auth-input" placeholder="your@email.com">
+                                <div id="signup-email-error" class="auth-error"></div>
+                            </div>
+                            
+                            <div class="auth-field">
+                                <label class="auth-label">Enter Password</label>
+                                <input type="password" id="signup-password" class="auth-input" placeholder="••••••••">
+                                <div id="signup-password-error" class="auth-error"></div>
+                            </div>
+                            
+                            <div class="auth-field">
+                                <label class="auth-label">Enter courseId (optional)</label>
+                                <input type="text" id="signup-courseid" class="auth-input" placeholder="Enter course ID">
+                                <div id="signup-courseid-error" class="auth-error"></div>
+                            </div>
+                            
+                            <button id="signup-button" class="auth-button">Create Account</button>
+                        </div>
+                        <div class="auth-footer">
+                            Already have an account? <span class="signup-link" id="back-to-login">Sign In</span>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(this.signUpModal);
+                
+                const signupButton = document.getElementById('signup-button');
+                const backToLogin = document.getElementById('back-to-login');
+                
+                signupButton.addEventListener('click', () => {
+                    this.signUpWithEmail();
+                });
+                
+                backToLogin.addEventListener('click', () => {
+                    this.hideSignUpModal();
+                    this.showAuthModal();
+                });
+                
+                this.signUpModal.addEventListener('click', (e) => {
+                    if (e.target === this.signUpModal) {
+                        this.hideSignUpModal();
+                        this.showAuthModal();
+                    }
+                });
+            }
+            
+            async signInWithEmail() {
+                const email = document.getElementById('auth-email').value.trim();
+                const password = document.getElementById('auth-password').value.trim();
+                const courseId = document.getElementById('auth-courseid').value.trim();
+                const signInButton = document.getElementById('sign-in-button');
+                const emailError = document.getElementById('email-error');
+                const passwordError = document.getElementById('password-error');
+                const courseIdError = document.getElementById('courseid-error');
+                
+                // Clear previous errors
+                emailError.textContent = '';
+                emailError.classList.remove('show');
+                passwordError.textContent = '';
+                passwordError.classList.remove('show');
+                courseIdError.textContent = '';
+                courseIdError.classList.remove('show');
+                
+                // Basic validation
+                if (!email) {
+                    emailError.textContent = 'Please enter your email';
+                    emailError.classList.add('show');
+                    return;
+                }
+                
+                if (!password) {
+                    passwordError.textContent = 'Please enter your password';
+                    passwordError.classList.add('show');
+                    return;
+                }
+                
+                signInButton.textContent = 'Signing In...';
+                signInButton.classList.add('loading');
+                
+                try {
+                    await this.auth.signInWithEmailAndPassword(email, password);
+                    
+                    // Store courseId if provided
+                    if (courseId) {
+                        localStorage.setItem('conceptblitz_courseId', courseId);
+                    }
+                    
+                    // Show loader while redirecting
+                    this.showLoader("Redirecting...");
+                    
+                    // Success - auth state listener will handle the redirect
+                } catch (error) {
+                    console.error("Sign in error:", error);
+                    
+                    signInButton.textContent = 'Sign In';
+                    signInButton.classList.remove('loading');
+                    
+                    switch (error.code) {
+                        case 'auth/invalid-email':
+                            emailError.textContent = 'Invalid email address';
+                            emailError.classList.add('show');
+                            break;
+                        case 'auth/user-disabled':
+                            emailError.textContent = 'This account has been disabled';
+                            emailError.classList.add('show');
+                            break;
+                        case 'auth/user-not-found':
+                            emailError.textContent = 'No account found with this email';
+                            emailError.classList.add('show');
+                            break;
+                        case 'auth/wrong-password':
+                            passwordError.textContent = 'Incorrect password';
+                            passwordError.classList.add('show');
+                            break;
+                        case 'auth/too-many-requests':
+                            passwordError.textContent = 'Too many failed attempts. Try again later';
+                            passwordError.classList.add('show');
+                            break;
+                        default:
+                            passwordError.textContent = 'Failed to sign in. Please try again';
+                            passwordError.classList.add('show');
+                    }
+                }
+            }
+            
+            async signUpWithEmail() {
+                const email = document.getElementById('signup-email').value.trim();
+                const password = document.getElementById('signup-password').value.trim();
+                const courseId = document.getElementById('signup-courseid').value.trim();
+                const signupButton = document.getElementById('signup-button');
+                const emailError = document.getElementById('signup-email-error');
+                const passwordError = document.getElementById('signup-password-error');
+                const courseIdError = document.getElementById('signup-courseid-error');
+                
+                // Clear previous errors
+                emailError.textContent = '';
+                emailError.classList.remove('show');
+                passwordError.textContent = '';
+                passwordError.classList.remove('show');
+                courseIdError.textContent = '';
+                courseIdError.classList.remove('show');
+                
+                // Basic validation
+                if (!email) {
+                    emailError.textContent = 'Please enter your email';
+                    emailError.classList.add('show');
+                    return;
+                }
+                
+                if (!password) {
+                    passwordError.textContent = 'Please enter a password';
+                    passwordError.classList.add('show');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    passwordError.textContent = 'Password must be at least 6 characters';
+                    passwordError.classList.add('show');
+                    return;
+                }
+                
+                signupButton.textContent = 'Creating Account...';
+                signupButton.classList.add('loading');
+                
+                try {
+                    // Create user account
+                    const userCredential = await this.auth.createUserWithEmailAndPassword(email, password);
+                    
+                    // Store courseId if provided
+                    if (courseId) {
+                        localStorage.setItem('conceptblitz_courseId', courseId);
+                    }
+                    
+                    // Clear form fields
+                    document.getElementById('signup-email').value = '';
+                    document.getElementById('signup-password').value = '';
+                    document.getElementById('signup-courseid').value = '';
+                    
+                    // Change button text
+                    signupButton.textContent = 'Account Created!';
+                    signupButton.style.backgroundColor = '#10b981';
+                    
+                    // Show loader while redirecting
+                    this.showLoader("Account created! Redirecting...");
+                    
+                    // Success - auth state listener will handle the redirect
+                    
+                } catch (error) {
+                    console.error("Sign up error:", error);
+                    
+                    signupButton.textContent = 'Create Account';
+                    signupButton.classList.remove('loading');
+                    
+                    switch (error.code) {
+                        case 'auth/email-already-in-use':
+                            emailError.textContent = 'Email already in use';
+                            emailError.classList.add('show');
+                            break;
+                        case 'auth/invalid-email':
+                            emailError.textContent = 'Invalid email address';
+                            emailError.classList.add('show');
+                            break;
+                        case 'auth/operation-not-allowed':
+                            emailError.textContent = 'Email/password accounts are not enabled';
+                            emailError.classList.add('show');
+                            break;
+                        case 'auth/weak-password':
+                            passwordError.textContent = 'Password is too weak';
+                            passwordError.classList.add('show');
+                            break;
+                        default:
+                            emailError.textContent = 'Failed to create account';
+                            emailError.classList.add('show');
+                    }
+                }
+            }
+            
+            hideAuthModal() {
+                if (this.authModal && this.authModal.parentNode) {
+                    this.authModal.parentNode.removeChild(this.authModal);
+                    this.authModal = null;
+                }
+            }
+            
+            hideSignUpModal() {
+                if (this.signUpModal && this.signUpModal.parentNode) {
+                    this.signUpModal.parentNode.removeChild(this.signUpModal);
+                    this.signUpModal = null;
+                }
+            }
+            
+            closeAllModals() {
+                this.hideAuthModal();
+                this.hideSignUpModal();
+            }
+            
+            showSignInPrompt(message) {
+                const authContainer = document.getElementById('auth-container');
+                if (!authContainer) return;
+                
+                const defaultMessage = "Authentication is required to access this content. Please sign in to continue.";
+                
+                const html = `
+                    <div class="signin-prompt-container">
+                        <div class="signin-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="signin-title">Sign In To Continue</div>
+                        <div class="signin-message">
+                            ${message || defaultMessage}
+                        </div>
+                        <button id="sign-in-prompt-button" class="signin-button">
+                            Sign In To Continue
+                        </button>
+                    </div>
+                `;
+                
+                authContainer.innerHTML = html;
+                
+                // Add event listener to the button
+                setTimeout(() => {
+                    const button = document.getElementById('sign-in-prompt-button');
+                    if (button) {
+                        button.addEventListener('click', () => {
+                            this.showAuthModal();
+                        });
+                    }
+                }, 100);
+            }
+            
+            showError(message) {
+                const authContainer = document.getElementById('auth-container');
+                if (!authContainer) return;
+                
+                const html = `
+                    <div class="error-container">
+                        <div class="error-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="error-title">Error</div>
+                        <div class="error-message">
+                            ${message}
+                        </div>
+                        <button id="retry-button" class="signin-button" style="background: #3b82f6;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+                
+                authContainer.innerHTML = html;
+                
+                document.getElementById('retry-button')?.addEventListener('click', () => {
+                    window.location.reload();
+                });
+            }
+            
+            showLoader(message = "Loading...") {
+                const loaderHtml = `
+                    <div class="loading-overlay" id="auth-loader">
+                        <div class="loading-content">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">${message}</div>
+                        </div>
+                    </div>
+                `;
+                
+                if (!document.getElementById('auth-loader')) {
+                    document.body.insertAdjacentHTML('beforeend', loaderHtml);
+                } else {
+                    // Update existing loader message
+                    const loaderText = document.querySelector('#auth-loader .loading-text');
+                    if (loaderText) {
+                        loaderText.textContent = message;
+                    }
+                }
+            }
+            
+            hideLoader() {
+                const loader = document.getElementById('auth-loader');
+                if (loader && loader.parentNode) {
+                    loader.parentNode.removeChild(loader);
+                }
+            }
+        }
+
+        // ===== PAGE INITIALIZATION =====
+        let authPageManager;
+        
+        window.addEventListener('load', () => {
+            // Initialize the auth page manager
+            authPageManager = new AuthPageManager();
+            window.authPageManager = authPageManager;
+        });
+        
+        // Handle beforeunload to clean up
+        window.addEventListener('beforeunload', () => {
+            // Clean up session listener if user leaves page
+            if (authPageManager?.sessionManager) {
+                const auth = firebase.auth();
+                const user = auth.currentUser;
+                if (user) {
+                    authPageManager.sessionManager.removeSessionListener();
+                }
+            }
+        });
+        
+        // Utility function for other pages to redirect to auth page
+        function redirectToAuthPage(redirectUrl = null) {
+            let authUrl = 'https://dilshadalmm.github.io/Embed/index3.html';
+            
+            if (redirectUrl) {
+                // Validate it's a same-domain URL
+                try {
+                    const url = new URL(redirectUrl, window.location.origin);
+                    if (url.origin === window.location.origin) {
+                        authUrl += `?redirect=${encodeURIComponent(redirectUrl)}`;
+                    }
+                } catch (e) {
+                    console.warn("Invalid redirect URL:", redirectUrl);
+                }
+            }
+            
+            // Store in sessionStorage as backup
+            if (redirectUrl) {
+                sessionStorage.setItem('auth_redirect', redirectUrl);
+            }
+            
+            window.location.href = authUrl;
+        }
+        
+        // Make redirect function available globally for other pages
+        window.redirectToAuthPage = redirectToAuthPage;
+        
+        // CRITICAL: Export SessionManager for use on protected pages
+        window.SessionManager = SessionManager;
+        
+    </script>
+</body>
+</html>
