@@ -3362,40 +3362,43 @@
                 }
             }
             
-            setupAuthListeners() {
+                        setupAuthListeners() {
                 this.auth.onAuthStateChanged(async (user) => {
                     this.currentUser = user;
                     console.log("Auth state changed:", user ? "User logged in" : "No user");
                     
-                    // DIRECT ACCESS WITHOUT AUTH: Protected Route Rule
+                    // 1. If absolutely no user is found after Firebase finishes initializing
                     if (!user) {
-                        // Store the full URL as redirectUrl
-                        const redirectUrl = window.location.href;
-                        localStorage.setItem('redirectUrl', redirectUrl);
-                        
-                        // Immediately redirect to HOME_URL
-                        console.log("No authentication, redirecting to:", this.HOME_URL);
+                        // We add a small delay to ensure it's not just a slow connection
+                        setTimeout(() => {
+                            if (!this.auth.currentUser) {
+                                console.log("No authentication, redirecting to:", this.HOME_URL);
+                                window.location.replace(this.HOME_URL);
+                            }
+                        }, 2000); // 2 second grace period
+                        return;
+                    }
+                    
+                    // 2. CHECK SESSION: This is where we match with index10.html
+                    // We wait for the session manager to confirm the ID matches Firestore
+                    const sessionValid = await this.sessionManager.checkExistingSession();
+                    
+                    if (!sessionValid) {
+                        console.error("Session ID mismatch or missing. Redirecting to home.");
                         window.location.replace(this.HOME_URL);
                         return;
                     }
                     
-                    // User is logged in via Firebase Auth, now check session
-                    // SessionManager will handle validation and redirect if session is invalid
-                    if (!this.sessionManager.isSessionReady()) {
-                        await this.sessionManager.checkExistingSession();
-                    }
-                    
-                    // If we get here, session is valid
-                    // Check if we have program and subject IDs
+                    // 3. Check if we have program and subject IDs
                     if (!this.currentProgramId || !this.currentSubjectId) {
-                        console.error("Missing programId or subjectId for permission check");
+                        console.error("Missing programId or subjectId");
                         if (this.app && this.app.showURLParamsError) {
                             this.app.showURLParamsError();
                         }
                         return;
                     }
                     
-                    // Check user permissions for current program/subject
+                    // 4. Check user permissions
                     const permissionStatus = await this.permissionManager.checkUserPermissions(
                         user.uid, 
                         this.currentProgramId, 
@@ -3403,7 +3406,7 @@
                     );
                     
                     if (permissionStatus.hasAccess) {
-                        // User has access, proceed normally
+                        // SUCCESS: User is logged in, session matches, and has permission
                         if (user.photoURL) {
                             this.app.stateManager.setProfileImageUrl(user.photoURL);
                             this.app.updateTopBar();
@@ -3413,19 +3416,17 @@
                             this.app.handleAuthStateChange(user, true, false);
                         }
                     } else if (permissionStatus.exists && !permissionStatus.approved) {
-                        // User has permission document but not approved yet
-                        console.log("User is waiting for admin approval:", user.uid);
-                        
+                        // Waiting for admin
                         if (this.app && this.app.handleAuthStateChange) {
                             this.app.handleAuthStateChange(user, false, true);
                         }
                     } else {
-                        // User doesn't have permission document or access denied
-                        console.log("User doesn't have access:", user.uid);
-                        
-                        // Redirect to home page if no access
+                        // No permission record found
                         window.location.replace(this.HOME_URL);
                     }
+                });
+                }
+                            
                     
                     if (user) {
                         this.closeAllAuthModals();
