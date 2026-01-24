@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEB Grade 10 Mark Sheet</title>
+    <style>
+        /* General Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Times New Roman", Times, serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* A4 Paper Dimensions & Container */
+        .sheet {
+            background-color: white;
+            width: 100%;
+            max-width: 210mm; /* A4 Width constraint */
+            min-height: 297mm;
+            padding: 20mm; /* Standard margin */
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #d3d3d3;
+        }
+
+        /* Button Styling (Screen Only) */
+        .action-bar {
+            margin-bottom: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        button {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: sans-serif;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        button:hover {
+            background-color: #1a252f;
+        }
+
+        /* Typography & Layout */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .header h2 {
+            font-size: 18pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .header h3 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .header h1 {
+            font-size: 20pt;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sub-header {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* Student Information Section */
+        .student-info {
+            width: 100%;
+            margin-bottom: 30px;
+            font-size: 12pt;
+            line-height: 1.8;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 5px;
+            flex-wrap: wrap; /* Allow wrapping on very small screens */
+        }
+
+        .label {
+            white-space: nowrap;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .field {
+            flex-grow: 1;
+            border-bottom: 1px dotted #000;
+            min-width: 50px;
+        }
+
+        /* Table Styling */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto; /* Allow horizontal scroll on mobile */
+            margin-bottom: 40px;
+        }
+
+        .marks-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11pt;
+            min-width: 600px; /* Force minimum width to maintain structure */
+        }
+
+        .marks-table th, .marks-table td {
+            border: 1px solid black;
+            padding: 8px 5px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .marks-table th {
+            font-weight: bold;
+            background-color: white;
+        }
+
+        .text-left {
+            text-align: left !important;
+            padding-left: 10px;
+        }
+
+        /* Footer Section */
+        .footer {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 12pt;
+            font-weight: bold;
+        }
+
+        .footer-left {
+            text-align: left;
+        }
+
+        .footer-right {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .signature-line {
+            display: inline-block;
+            width: 200px;
+            border-bottom: 1px solid black;
+            margin-top: 50px;
+            margin-bottom: 5px;
+        }
+
+        /* Mobile Screen Adjustments (Max Width 768px) */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .sheet {
+                padding: 15px;
+                min-height: auto; /* Allow height to fit content on mobile */
+            }
+
+            .header h2 { font-size: 14pt; }
+            .header h3 { font-size: 11pt; }
+            .header h1 { font-size: 16pt; margin-top: 10px; margin-bottom: 10px; }
+            .sub-header { font-size: 10pt; }
+
+            .student-info { font-size: 10pt; margin-bottom: 20px; }
+            
+            .info-row {
+                margin-bottom: 8px;
+            }
+
+            /* Stack footer on mobile */
+            .footer {
+                flex-direction: column;
+                gap: 40px;
+                align-items: center;
+                margin-top: 30px;
+            }
+            
+            .footer-left, .footer-right {
+                text-align: center;
+                width: 100%;
+                align-items: center;
+            }
+            
+            .footer-right {
+                order: 2; /* Ensure controller is at bottom */
+            }
+
+            /* Adjust table for mobile */
+            .marks-table {
+                font-size: 10pt;
+                min-width: 100%; /* Let it shrink */
+            }
+            
+            .marks-table th, .marks-table td {
+                padding: 4px 2px;
+            }
+            
+            /* Hide non-critical columns on extremely small screens? 
+               No, for a gradesheet we need all columns. 
+               We rely on overflow-x for very small screens. */
+        }
+
+        /* Print Media Queries - Strict A4 */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+                display: block;
+            }
+
+            .sheet {
+                box-shadow: none;
+                border: none;
+                width: 210mm !important; /* Force A4 width */
+                height: 297mm !important; /* Force A4 height */
+                max-width: none;
+                padding: 20mm !important;
+                margin: 0 auto;
+            }
+
+            .action-bar {
+                display: none;
+            }
+            
+            /* Reset mobile overrides */
+            .footer {
+                flex-direction: row;
+                align-items: flex-end;
+            }
+            .footer-left { text-align: left; }
+            .footer-right { text-align: right; align-items: flex-end; }
+            .marks-table { font-size: 11pt; min-width: auto; }
+            .student-info { font-size: 12pt; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Action Bar for Screen -->
+    <div class="action-bar">
+        <button onclick="window.print()">Print / Download PDF</button>
+    </div>
+
+    <!-- Main Sheet -->
+    <div class="sheet">
+        
+        <!-- Header -->
+        <div class="header">
+            <h2>Government Of Nepal</h2>
+            <h3>National Examination Board</h3>
+            <br>
+            <div class="sub-header">SECONDARY EDUCATION EXAMINATION, GRADE 10</div>
+            <h1>GRADE-SHEET</h1>
+        </div>
+
+        <!-- Student Info -->
+        <div class="student-info">
+            <div class="info-row">
+                <span class="label">THE GRADE SECURED BY</span>
+                <span class="field"></span>
+            </div>
+            <div class="info-row">
+                <span class="label">DATE OF BIRTH</span>
+                <span class="field" style="max-width: 100px; min-width: 80px;"></span>
+                <span class="label" style="margin-left: 10px;">DISTRICT</span>
+                <span class="field"></span>
+            </div>
+            <div class="info-row">
+                <span class="label">SYMBOL NUMBER</span>
+                <span class="field"></span>
+            </div>
+            <div class="info-row">
+                <span class="label">SCHOOL NAME</span>
+                <span class="field"></span>
+            </div>
+            <div class="info-row">
+                <span class="label">YEAR OF COMPLETION</span>
+                <span class="field"></span>
+            </div>
+        </div>
+
+        <!-- Marks Table -->
+        <div class="table-responsive">
+            <table class="marks-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 8%;">S.N.</th>
+                        <th rowspan="2" style="width: 40%;">SUBJECTS</th>
+                        <th rowspan="2" style="width: 12%;">CREDIT<br>HOURS</th>
+                        <th colspan="2">OBTAINED GRADE</th>
+                        <th rowspan="2" style="width: 12%;">FINAL<br>GRADE</th>
+                        <th rowspan="2" style="width: 12%;">GRADE<br>POINTS</th>
+                        <th rowspan="2" style="width: 10%;">REMARKS</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 8%;">TH</th>
+                        <th style="width: 8%;">PR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Sample Data Rows -->
+                    <tr>
+                        <td>1</td>
+                        <td class="text-left">COMPULSORY ENGLISH</td>
+                        <td>4.0</td>
+                        <td>A</td>
+                        <td>A+</td>
+                        <td>A</td>
+                        <td>3.6</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td class="text-left">COMPULSORY NEPALI</td>
+                        <td>4.0</td>
+                        <td>B+</td>
+                        <td>A</td>
+                        <td>B+</td>
+                        <td>3.2</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td class="text-left">COMPULSORY MATHEMATICS</td>
+                        <td>4.0</td>
+                        <td>A+</td>
+                        <td>-</td>
+                        <td>A+</td>
+                        <td>4.0</td>
+                        <td></td>
+                    </tr>
+                     <tr>
+                        <td>4</td>
+                        <td class="text-left">COMPULSORY SCIENCE</td>
+                        <td>4.0</td>
+                        <td>A</td>
+                        <td>A+</td>
+                        <td>A+</td>
+                        <td>3.6</td>
+                        <td></td>
+                    </tr>
+                     <tr>
+                        <td>5</td>
+                        <td class="text-left">SOCIAL STUDIES</td>
+                        <td>4.0</td>
+                        <td>B</td>
+                        <td>A</td>
+                        <td>B+</td>
+                        <td>3.2</td>
+                        <td></td>
+                    </tr>
+                     <tr>
+                        <td>6</td>
+                        <td class="text-left">OPTIONAL I (ACCOUNT)</td>
+                        <td>4.0</td>
+                        <td>A</td>
+                        <td>A</td>
+                        <td>A</td>
+                        <td>3.6</td>
+                        <td></td>
+                    </tr>
+                     <tr>
+                        <td>7</td>
+                        <td class="text-left">OPTIONAL II (COMPUTER)</td>
+                        <td>4.0</td>
+                        <td>A+</td>
+                        <td>A+</td>
+                        <td>A+</td>
+                        <td>4.0</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="6" style="text-align: right; font-weight: bold; padding-right: 15px;">GRADE POINT AVERAGE (GPA):</td>
+                        <td colspan="2" style="font-weight: bold;">3.60</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-left">
+                <div>CHECKED BY: ............................</div>
+                <div style="margin-top: 15px;">DATE OF ISSUE: .........................</div>
+            </div>
+            <div class="footer-right">
+                <div class="signature-line"></div>
+                <div>CONTROLLER OF EXAMINATION</div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
+
+
